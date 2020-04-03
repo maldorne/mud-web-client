@@ -622,19 +622,19 @@ var JujuMapper = function(o) {
 	        	
 	        	return null;
 	        	
-	        	if (at.num == d.from.num)
-	        		return 'White';
+	        	// if (at.num == d.from.num)
+	        	//	return 'White';
 	        	
-	        	if (at.num == d.to.num && d.type != 'jump')
-	        		return 'White';
+	        	// if (at.num == d.to.num && d.type != 'jump')
+	        	// 	return 'White';
 	        	
-	        	if (d.from.z != d.to.z)
-	        		return 'Crimson';
+	        	// if (d.from.z != d.to.z)
+	        	// 	return 'Crimson';
 	        	
-	        	if (areas[d.to.zone||d.from.zone])
-	        		return areas[d.to.zone||d.from.zone].color;
+	        	// if (areas[d.to.zone||d.from.zone])
+	        	// 	return areas[d.to.zone||d.from.zone].color;
 	        	
-	        	return 'none';
+	        	// return 'none';
 	        })
 	        .style("stroke", function(d) {
 

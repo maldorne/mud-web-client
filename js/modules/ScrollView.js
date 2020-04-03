@@ -372,10 +372,10 @@ var ScrollView = function(o) {
 	
 	var title = function(t) {
 		win.title(t);
-		document.title = t || param('name');
+		document.title = t || Config.name;
 	}
 	
-	title(param('name') || (param('host') + ':' + param('port')));
+	title(Config.name || (Config.host + ':' + Config.port));
 	
 	var echoOff = function() { o.echo = 0 }
 	var echoOn = function() { o.echo = 1 }
@@ -392,8 +392,8 @@ var ScrollView = function(o) {
 	}
 
 	var ws = new Socket({
-		host: param('host'),
-		port: param('port'),
+    host: Config.host,
+    port: Config.port,
 		proxy: Config.proxy,
 		out: self
 	});

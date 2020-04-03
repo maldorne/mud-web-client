@@ -3,7 +3,7 @@
 if (param('havoc')) {
 	
 	Config.port = Config.port.length ? Config.port : 6001;
-	Config.proxy = 'ws://' + Config.host + ':' + Config.port + '/';
+	Config.proxy = 'wss://' + Config.host + ':' + Config.port + '/';
 	Config.fbAppId = Config.fbAppId || param('fb'); 
 	Config.bare = 1;
 	Config.nocore = 1;

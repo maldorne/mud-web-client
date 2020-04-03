@@ -2,11 +2,11 @@ var Config = {
 	
 	debug: param('debug') || 0,
 	
-	host: param('host'),
+	host: param('host') || 'muds.maldorne.org',
 	
-	port: param('port'),
+	port: param('port') || '5000',
 	
-	name: param('name'),
+	name: param('name') || 'House of Maldorne',
 	
 	profile: param('profile'),
 
@@ -40,7 +40,7 @@ var Config = {
 
 	separator: window.location.search.has('separator') ? param('separator') : ';',
 
-	proxy: param('proxy') || 'ws://www.cloudgamer.org:6200/',
+	proxy: 'wss://play.maldorne.org:6200/',
 
 	view: param('host') + ':' + param('port') + ':' + window.screen.width + 'x' + window.screen.height,
 	
