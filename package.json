@@ -14,7 +14,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/eslint/bin/eslint.js . --ext .js,.json",
+    "lint:fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.json --fix"
   },
   "repository": {
     "type": "git",
@@ -24,5 +26,13 @@
   "bugs": {
     "url": "https://github.com/houseofmaldorne/mud-web-client/issues"
   },
-  "homepage": "https://github.com/houseofmaldorne/mud-web-client#readme"
+  "homepage": "https://github.com/houseofmaldorne/mud-web-client#readme",
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-json-format": "^2.0.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^2.0.2"
+  }
 }
