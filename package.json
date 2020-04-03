@@ -20,7 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/houseofmaldorne/mud-web-client.git"
   },
-  "license": "GPL-2.0",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/houseofmaldorne/mud-web-client/issues"
   },
