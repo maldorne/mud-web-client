@@ -1,86 +1,100 @@
 var Config = {
-	
-	debug: param('debug') || 0,
-	
-	host: param('host') || 'muds.maldorne.org',
-	
-	port: param('port') || '5000',
-	
-	name: param('name') || 'House of Maldorne',
-	
-	profile: param('profile'),
+  debug: param('debug') || 0,
 
-	width: param('width') || 800,
+  host: param('host') || 'muds.maldorne.org',
 
-	height: param('height') || j(window).height() - 80,
-	
-	top: param('top') || 0,
+  port: param('port') || '5010',
 
-	left: param('left') || 0,
-	
-	clean: window.location.search.has('clean') || 0,
-	
-	solo: window.location.search.has('solo') || 0,
-	
-	nocenter: window.location.search.has('nocenter') || 0,
-	
-	notrack: param('notrack') || 0,
-	
-	nodrag: param('nodrag') || 0,
-	
-	embed: param('embed') || 0,
-	
-	kong: param('kong'),
-	
-	collapse: [],
-	
-	dev: window.location.search.has('dev') || 0,
+  name: param('name') || 'House of Maldorne',
 
-	onfirst: param('onfirst') || 0,
+  profile: param('profile'),
 
-	separator: window.location.search.has('separator') ? param('separator') : ';',
+  width: param('width') || 800,
 
-	proxy: 'wss://play.maldorne.org:6200/',
+  height: param('height') || j(window).height() - 80,
 
-	view: param('host') + ':' + param('port') + ':' + window.screen.width + 'x' + window.screen.height,
-	
-	device: {
-		touch: 'ontouchstart' in window,
-		lowres: (j(window).width() <= 640 && j(window).height() <= 640), 
-		mobile: (j(window).width() <= 640 && j(window).height() <= 640),
-		tablet: ('ontouchstart' in window && j(window).width() > 640),
-		width: j(window).width(),
-		height: j(window).height()
-	},
-	
-	settings: (function() {
-		
-		var s = [];
+  top: param('top') || 0,
 
-		if (!window.user)
-			return s;
-		
-		if (user && user.pref && user.pref.sitelist && user.pref.sitelist[param('name')])
-			j.extend(true, s, user.pref.sitelist[param('name')].settings);
-		
-		if (param('profile') && user && user.pref && user.pref.profiles && user.pref.profiles[param('profile')] && user.pref.profiles[param('profile')].settings)
-			j.extend(true, s, user.pref.profiles[param('profile')].settings);
-		
-		return s;
-		
-	})(),
-	
-	getSetting: function(A) {
-		
-		if (!Config.settings.length)
-			return null;
+  left: param('left') || 0,
 
-		for (var i = 0; i < Config.settings.length; i++)
-			if (Config.settings[i].id == A)
-				return Config.settings[i].value;
-		
-		return null;
-	}
+  clean: window.location.search.has('clean') || 0,
+
+  solo: window.location.search.has('solo') || 0,
+
+  nocenter: window.location.search.has('nocenter') || 0,
+
+  notrack: param('notrack') || 0,
+
+  nodrag: param('nodrag') || 0,
+
+  embed: param('embed') || 0,
+
+  kong: param('kong'),
+
+  collapse: [],
+
+  dev: window.location.search.has('dev') || 0,
+
+  onfirst: param('onfirst') || 0,
+
+  separator: window.location.search.has('separator')
+    ? param('separator')
+    : ';',
+
+  proxy: 'wss://play.maldorne.org:6200/',
+
+  view:
+    param('host') +
+    ':' +
+    param('port') +
+    ':' +
+    window.screen.width +
+    'x' +
+    window.screen.height,
+
+  device: {
+    touch: 'ontouchstart' in window,
+    lowres: j(window).width() <= 640 && j(window).height() <= 640,
+    mobile: j(window).width() <= 640 && j(window).height() <= 640,
+    tablet: 'ontouchstart' in window && j(window).width() > 640,
+    width: j(window).width(),
+    height: j(window).height(),
+  },
+
+  settings: (function () {
+    var s = [];
+
+    if (!window.user) return s;
+
+    if (
+      user &&
+      user.pref &&
+      user.pref.sitelist &&
+      user.pref.sitelist[param('name')]
+    )
+      j.extend(true, s, user.pref.sitelist[param('name')].settings);
+
+    if (
+      param('profile') &&
+      user &&
+      user.pref &&
+      user.pref.profiles &&
+      user.pref.profiles[param('profile')] &&
+      user.pref.profiles[param('profile')].settings
+    )
+      j.extend(true, s, user.pref.profiles[param('profile')].settings);
+
+    return s;
+  })(),
+
+  getSetting: function (A) {
+    if (!Config.settings.length) return null;
+
+    for (var i = 0; i < Config.settings.length; i++)
+      if (Config.settings[i].id == A) return Config.settings[i].value;
+
+    return null;
+  },
 };
 
 log(Config);
