@@ -1,0 +1,28 @@
+{
+  "name": "mud-web-client",
+  "version": "2.0.0",
+  "description": "Web client through websockets",
+  "keywords": [
+    "mud",
+    "client",
+    "websockets"
+  ],
+  "author": "neverbot <ivan@neverbot.com>",
+  "contributors": [
+    "plamzi <plamzi@gmail.com>",
+    "neverbot <ivan@neverbot.com>"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/houseofmaldorne/mud-web-client.git"
+  },
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/houseofmaldorne/mud-web-client/issues"
+  },
+  "homepage": "https://github.com/houseofmaldorne/mud-web-client#readme"
+}
