@@ -11,8 +11,7 @@
       "experimentalObjectRestSpread": true
     }
   },
-  "globals": {
-  },
+  "globals": {},
   "extends": [
     "eslint:recommended",
     "plugin:prettier/recommended"
