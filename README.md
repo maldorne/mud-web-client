@@ -1,29 +1,12 @@
-MUDPortal Web App
-=================
+# mud-web-client
 
-Source code for the websocket cloud app running at http://www.mudportal.com/play | http://www.cloudgamer.org/play
+Webapp to connect to a [MUD](https://en.wikipedia.org/wiki/MUD) / MUSH / MOO game server, supporting all major data interchange and interactive text protocols. The connection is done through a secure websocket (`wss://` protocol), so you will need a proxy in the server that _translates_ the `wss` sessions to `telnet`. You can use the `mud-web-proxy` project to achieve that.
 
-The web app can connect to any MUD / MUSH / MOO game server and supports all major data interchange and interactive text protocols.
+This project is a fork of [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App), made by [@plamzi](https://github.com/plamzi), creator of [mudportal.com](http://www.mudportal.com/). The original project had the code of both the client and proxy-server apps, and was outdated and did not support secure connections (`wss://` instead of `ws://`), so I decided to fork it, separate in different projects and update them. But kudos to [@plamzi](https://github.com/plamzi), who is the original author.
 
-The client pairs with the Havoc open source Multiplayer RPG Game Server at https://github.com/plamzi/Havoc
+## Features
 
-
-<b>Screenshots:</b>
-
-http://www.mudportal.com/images/Demo1.png
-
-http://www.mudportal.com/images/Demo2.png
-
-http://www.mudportal.com/images/Demo3.png
-
-
-<b>Features include:</b>
-
-* A modern window-based web UI with draggable and resizable windows, window toolbar.
-
-* Modular framework with event notification and a documented API: http://www.mudportal.com/forum/api-documentation 
-
-* A standalone Websocket proxy in node.js that enables a web client to connect to any socket game server and handles all protocol negotiations for simplicity (also doubles as a chat server)
+* Window-based web UI with draggable and resizable windows, window toolbar.
 
 * MCCP compression support (zlib)
 
@@ -39,21 +22,21 @@ http://www.mudportal.com/images/Demo3.png
 
 * Vector-based world mapper with flexible edit mode to allow for mapping any MUD world via exploration
 
-* Triggers / macros / command memory with typeahead (at this time, user prefs are saved to a Joomla back end that is not included in this project)
-
-* 20+ plugins found under js/modules, plus lots of working examples and customizations you can see in action on http://www.mudportal.com
+* Triggers / macros / command memory with typeahead
 
 
-<h1> Installation Notes</h1>
+## Installation
 
-* Grab this repository:
-
-```
-git clone https://github.com/plamzi/MUDPortal-Web-App
+``` bash
+git clone https://github.com/houseofmaldorne/mud-web-client
+npm install
 ```
 
 * Copy all files to a web-accessible folder on your web server.
 
-* Point a browser at the root of the folder to load the included index.html file.
+* Point a browser at the root of the folder to load the included `index.html` file.
 
-* For details on customizing the client, explore the web app forums at http://www.mudportal.com/forum/ . Register for a free account to browse existing customizations.
+## Configuration
+
+To Do
+
