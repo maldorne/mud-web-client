@@ -24,7 +24,6 @@ This project is a fork of [MUDPortal-Web-App](https://github.com/plamzi/MUDPorta
 
 * Triggers / macros / command memory with typeahead
 
-
 ## Installation
 
 ``` bash
