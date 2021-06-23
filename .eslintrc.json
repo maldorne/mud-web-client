@@ -1,7 +1,7 @@
 {
   "env": {
     "es6": true,
-    "node": true
+    "browser": true
   },
   "parser": "babel-eslint",
   "parserOptions": {
@@ -11,7 +11,9 @@
       "experimentalObjectRestSpread": true
     }
   },
-  "globals": {},
+  "globals": {
+    "j": true
+  },
   "extends": [
     "eslint:recommended",
     "plugin:prettier/recommended"
