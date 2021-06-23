@@ -29,10 +29,10 @@
   "homepage": "https://github.com/houseofmaldorne/mud-web-client#readme",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
+    "eslint": "^7.29.0",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-json-format": "^2.0.1",
-    "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^2.0.2"
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.1"
   }
 }
