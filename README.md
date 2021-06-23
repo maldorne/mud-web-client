@@ -45,5 +45,19 @@ npm install
 
 ## Configuration
 
-To Do
+In `src/config.js` you can change the following options, among others:
 
+``` javascript
+  debug: param('debug') || 0,
+  host: param('host') || 'muds.maldorne.org',
+  port: param('port') || '5010',
+  name: param('name') || 'House of Maldorne',
+  ...
+  proxy: 'wss://play.maldorne.org:6200/',
+  ...
+```
+
+These are the default values used when the client does not receive specific parameters. You have to specify:
+ * host: Your hostname. `localhost` or `127.0.0.1` don't seem to work: [see conversation here](https://github.com/houseofmaldorne/mud-web-proxy/issues/5#issuecomment-866464161).
+ * port: The port where the mud is running. The mud, **not** the proxy.
+ * proxy: The wss url where [the proxy]((https://github.com/houseofmaldorne/mud-web-proxy)) is running.
