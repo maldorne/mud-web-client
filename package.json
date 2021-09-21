@@ -15,8 +15,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "./node_modules/eslint/bin/eslint.js . --ext .js,.json",
-    "lint:fix": "./node_modules/eslint/bin/eslint.js . --ext .js,.json --fix"
+    "lint": "npx eslint . --ext js,json",
+    "lint:fix": "npx eslint . --ext js,json --fix"
   },
   "repository": {
     "type": "git",
