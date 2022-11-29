@@ -2,7 +2,7 @@
 
 ### What is this?
 
-Webapp to connect to a [MUD](https://en.wikipedia.org/wiki/MUD) / MUSH / MOO game server, supporting all major data interchange and interactive text protocols. The connection is done through a secure websocket (`wss://` protocol), so you will need a proxy in the server that _translates_ the `wss` sessions to `telnet`. You can use the [`mud-web-proxy`](https://github.com/houseofmaldorne/mud-web-proxy) project to achieve that.
+Webapp to connect to a [MUD](https://en.wikipedia.org/wiki/MUD) / MUSH / MOO game server, supporting all major data interchange and interactive text protocols. The connection is done through a secure websocket (`wss://` protocol), so you will need a proxy in the server that _translates_ the `wss` sessions to `telnet`. You can use the [`mud-web-proxy`](https://github.com/maldorne/mud-web-proxy) project to achieve that.
 
 ### History
 
@@ -35,7 +35,7 @@ In modern browsers, web-pages served through `https://` are not allowed to open 
 ## Installation
 
 ``` bash
-git clone https://github.com/houseofmaldorne/mud-web-client
+git clone https://github.com/maldorne/mud-web-client
 npm install
 ```
 
@@ -58,6 +58,6 @@ In `src/config.js` you can change the following options, among others:
 ```
 
 These are the default values used when the client does not receive specific parameters. You have to specify:
- * host: Your hostname. `localhost` or `127.0.0.1` don't seem to work: [see conversation here](https://github.com/houseofmaldorne/mud-web-proxy/issues/5#issuecomment-866464161).
+ * host: Your hostname. `localhost` or `127.0.0.1` don't seem to work: [see conversation here](https://github.com/maldorne/mud-web-proxy/issues/5#issuecomment-866464161).
  * port: The port where the mud is running. The mud, **not** the proxy.
- * proxy: The `wss` url where [the proxy](https://github.com/houseofmaldorne/mud-web-proxy) is running.
+ * proxy: The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.

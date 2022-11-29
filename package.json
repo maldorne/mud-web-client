@@ -20,13 +20,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/houseofmaldorne/mud-web-client.git"
+    "url": "git+https://github.com/maldorne/mud-web-client.git"
   },
   "license": "gpl-3.0",
   "bugs": {
-    "url": "https://github.com/houseofmaldorne/mud-web-client/issues"
+    "url": "https://github.com/maldorne/mud-web-client/issues"
   },
-  "homepage": "https://github.com/houseofmaldorne/mud-web-client#readme",
+  "homepage": "https://github.com/maldorne/mud-web-client#readme",
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
     "eslint": "^8.28.0",
