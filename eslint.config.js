@@ -9,7 +9,7 @@ export default [
   {
     // global ignores
     // folders can only be ignored at the global level, per-cfg you must do: '**/dist/**/*'
-    ignores: ['**/public/'],
+    // ignores: ['**/public/'],
   },
   // general defaults
   js.configs.recommended,
@@ -35,7 +35,7 @@ export default [
       globals: {
         ...globals.node,
         ...globals.browser,
-        j: 'writable',
+        j: 'readonly',
       },
       parserOptions: {
         requireConfigFile: false,
