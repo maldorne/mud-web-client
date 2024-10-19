@@ -263,13 +263,13 @@ var JujuMapper = function (o) {
 
   var save = function () {
     j(id + ' .icon-save').replaceWith(
-      '<i class="icon icon-spinner spinner"></i>'
+      '<i class="icon icon-spinner spinner"></i>',
     );
     map.rooms = j.extend(true, {}, rooms);
     pack();
     j.post(o.saveURL, { data: map }, function (d) {
       j(id + ' .icon-spinner').replaceWith(
-        '<i class="icon icon-save save" title="Save the latest map data."></i>'
+        '<i class="icon icon-save save" title="Save the latest map data."></i>',
       );
     });
   };
@@ -403,7 +403,7 @@ var JujuMapper = function (o) {
           setTimeout(function () {
             log('Mapper: stopped scrolling');
             updateVisible();
-          }, 200)
+          }, 200),
         );
       });
 
@@ -796,7 +796,7 @@ var JujuMapper = function (o) {
         j('#mapper .context').append(
           '<span class="selection">' +
             selection.length +
-            ' rooms selected</span>'
+            ' rooms selected</span>',
         );
 
         if (selection.length != 1) j('#mapper .context .trans').hide();
@@ -992,7 +992,7 @@ var JujuMapper = function (o) {
 
       status
         .append(
-          'Suspended positioning (room coorinates detected).<br>Updating rooms... '
+          'Suspended positioning (room coorinates detected).<br>Updating rooms... ',
         )
         .scrollTop(status[0].scrollHeight);
 
@@ -1029,7 +1029,7 @@ var JujuMapper = function (o) {
             .append(
               'Start room #' +
                 data.start +
-                ' could not be placed in relation to an existing room. Aborting.<br>'
+                ' could not be placed in relation to an existing room. Aborting.<br>',
             )
             .scrollTop(status[0].scrollHeight);
           return;
@@ -1039,7 +1039,7 @@ var JujuMapper = function (o) {
           .append(
             'Start room #' +
               data.start +
-              ' not found in room array - aborting.<br>'
+              ' not found in room array - aborting.<br>',
           )
           .scrollTop(status[0].scrollHeight);
         return;
@@ -1065,7 +1065,7 @@ var JujuMapper = function (o) {
             n +
             ' Remaining:' +
             data.rooms.length +
-            '<br>'
+            '<br>',
         )
         .scrollTop(status[0].scrollHeight);
       done = pass == n || !data.rooms.length;
@@ -1412,7 +1412,7 @@ var JujuMapper = function (o) {
         'Mapper.go: scrolled to: x' +
           j(o.container).scrollLeft() +
           ' y' +
-          j(o.container).scrollTop()
+          j(o.container).scrollTop(),
       );
       /* if near map edge, render anyway */
       if (y + H > o.height - H || x + W > o.width - W) render();
@@ -1461,36 +1461,36 @@ var JujuMapper = function (o) {
     if (!j('.mapper .context').length) {
       j('.mapper').prepend("<div class='context context-top'><ul></ul></div>");
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip dir" title="Nudge selected left (west)." data="w"><i class="icon-angle-left"></i></li>'
+        '<li class="kbutton tip dir" title="Nudge selected left (west)." data="w"><i class="icon-angle-left"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip dir" title="Nudge selected up (north)." data="n"><i class="icon-angle-up"></i></li>'
+        '<li class="kbutton tip dir" title="Nudge selected up (north)." data="n"><i class="icon-angle-up"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip dir" title="Nudge selected down (south)." data="s"><i class="icon-angle-down"></i></li>'
+        '<li class="kbutton tip dir" title="Nudge selected down (south)." data="s"><i class="icon-angle-down"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip dir" title="Nudge selected right (east)." data="e"><i class="icon-angle-right"></i></li>'
+        '<li class="kbutton tip dir" title="Nudge selected right (east)." data="e"><i class="icon-angle-right"></i></li>',
       );
       //j('.mapper .context-top ul').append('<li class="kbutton tip trans" style="display: none" title="Move room to adjacent area."><i class="icon-external-link"></i></li>');
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip road" title="Flag selection as road (always shown)."><i class="icon-road"></i></li>'
+        '<li class="kbutton tip road" title="Flag selection as road (always shown)."><i class="icon-road"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip dungeon" title="Flag area as dungeon (not shown unless inside)."><i class="icon-th"></i></li>'
+        '<li class="kbutton tip dungeon" title="Flag area as dungeon (not shown unless inside)."><i class="icon-th"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip reveal" title="Reveal all rooms in map window."><i class="icon-eye-open"></i></li>'
+        '<li class="kbutton tip reveal" title="Reveal all rooms in map window."><i class="icon-eye-open"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip forget" title="Forget (remove) selected."><i class="icon-remove"></i></li>'
+        '<li class="kbutton tip forget" title="Forget (remove) selected."><i class="icon-remove"></i></li>',
       );
       //j('.mapper .context-top ul').append('<li class="kbutton tip download" title="Download room data."><i class="icon-download-alt"></i></li>');
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip upload" title="Upload room data."><i class="icon-upload-alt"></i></li>'
+        '<li class="kbutton tip upload" title="Upload room data."><i class="icon-upload-alt"></i></li>',
       );
       j('.mapper .context-top ul').append(
-        '<li class="kbutton tip save" title="Save latest map data."><i class="icon-save"></i></li>'
+        '<li class="kbutton tip save" title="Save latest map data."><i class="icon-save"></i></li>',
       );
       //j('.mapper .context-top ul').append('<li class="kbutton tip relay" title="Re-layout selected."><i class="icon-refresh"></i></li>');
     } else {
@@ -1527,17 +1527,17 @@ var JujuMapper = function (o) {
     j(this).toggleClass('on');
     if (!j('.mapper .context #upload').length) {
       j('.mapper .context').append(
-        "<div id='upload'>Existing rooms:  <i class='icon-check checkbox' data='skip'></i> skip <i class='icon-unchecked checkbox' data='merge'></i> merge <i class='icon-unchecked checkbox' data='overwrite'></i> overwrite</div>"
+        "<div id='upload'>Existing rooms:  <i class='icon-check checkbox' data='skip'></i> skip <i class='icon-unchecked checkbox' data='merge'></i> merge <i class='icon-unchecked checkbox' data='overwrite'></i> overwrite</div>",
       );
       j('.mapper .context #upload').append(
         "<textarea style='width: 90%; height: 300px' placeholder='Paste JSON: " +
           '{ start: #of_start_room, rooms: [ { num: room1#, name: "Room 1 Name", zone: "Zone Name", terrain: "Inside", exits: { n: room2# } }, ' +
           '{ num: room2#, name: "Room 2 Name", zone: "Zone Name", exits: { s: room1# } } ]. ' +
           'The start room is the point from which relative placement will begin, so it should be a room that already has x,y,z coordinates. ' +
-          "If you are adding only rooms with pre-calculated x,y,z coordinates, there is no need to supply a start room.'>"
+          "If you are adding only rooms with pre-calculated x,y,z coordinates, there is no need to supply a start room.'>",
       );
       j('.mapper .context #upload').append(
-        "<div style='clear:both; height: 16px'></div><a class='kbutton btest'> test </a> <a class='kbutton bupload'>upload</a>"
+        "<div style='clear:both; height: 16px'></div><a class='kbutton btest'> test </a> <a class='kbutton bupload'>upload</a>",
       );
     } else {
       j('.mapper .context #upload .box-note').getNiceScroll().remove();
@@ -1624,7 +1624,7 @@ var JujuMapper = function (o) {
 
     j(id + ' .context #upload .box-note').remove();
     j(id + ' .context #upload').prepend(
-      '<div class="box-note">' + upload(o) + '</div>'
+      '<div class="box-note">' + upload(o) + '</div>',
     );
   });
 

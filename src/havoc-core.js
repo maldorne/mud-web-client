@@ -67,8 +67,7 @@ if (param('havoc') && !param('gui')) {
   Event.listen('socket_close', function () {
     new Modal({
       title: 'Server Disconnected',
-      text:
-        "Lost server connection. This is normal if you're navigating away or connecting from elsewhere. If not, usually, this means a server boot / update. Please reload the page to make sure you have the latest app code.<br><br>",
+      text: "Lost server connection. This is normal if you're navigating away or connecting from elsewhere. If not, usually, this means a server boot / update. Please reload the page to make sure you have the latest app code.<br><br>",
       backdrop: 'static',
       closeable: 0,
       buttons: [
@@ -145,7 +144,7 @@ var Facebook = function (a, b) {
           '\
 					<div class="left" style="opacity: 0.7; margin-right: 6px">\
 						<img src="/aaralon/images/FacebookButton.png" class="tip pointer" title="Log in with your Facebook account." onclick="Facebook(\'login\');return false;">\
-					</div>'
+					</div>',
         );
     });
 
@@ -161,7 +160,7 @@ var Facebook = function (a, b) {
             function (resp) {
               Facebook('statusChange', resp);
             },
-            { scope: 'public_profile,email' }
+            { scope: 'public_profile,email' },
           );
       });
     } catch (ex) {

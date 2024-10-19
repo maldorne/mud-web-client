@@ -81,7 +81,7 @@ var MacroPane = function (o) {
             buttons[b][1] +
             '">' +
             buttons[b][0] +
-            '</li>'
+            '</li>',
         );
 
     if (first) {

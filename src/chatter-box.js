@@ -138,7 +138,7 @@ var ChatterBox = function (o) {
 
         text = text.replace(
           /([^"'])(http?:\/\/[^\s\x1b"']+)/g,
-          '$1<a href="$2" target="_blank">$2</a>'
+          '$1<a href="$2" target="_blank">$2</a>',
         );
         text = '<div id="c">' + text + '</div>';
 
@@ -170,7 +170,7 @@ var ChatterBox = function (o) {
               code +
               '</span' +
               code +
-              '>'
+              '>',
           );
         }
       }

@@ -33,7 +33,7 @@ var iFrame = function (o) {
     j(o.id + ' .content').append(
       '<iframe src="' +
         o.url +
-        '" style="overflow: hidden; height: 100%; width: 100%; padding: 0px; margin: 0px auto;" frameBorder="0"><iframe>'
+        '" style="overflow: hidden; height: 100%; width: 100%; padding: 0px; margin: 0px auto;" frameBorder="0"><iframe>',
     );
     j(o.id + ' .content').height(j(o.id).height() - 20);
     /*

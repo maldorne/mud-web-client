@@ -80,7 +80,7 @@ var MistyBars = function (o) {
 			<div class="moves-label label"><span class="moves now"></span><span class="maxmoves max"></span></div>\
 			<div class="exp-label label single-label"></div>\
 			<div class="tar-label label single-label"></div>\
-		'
+		',
     );
 
     var st = '#bar-window .';
@@ -108,38 +108,38 @@ var MistyBars = function (o) {
     j(st + 'hpbar').animate(
       { height: 120 - 120 * (cv.hp / cv.maxhp) },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
     j(st + 'manabar').animate(
       { width: w - w * (cv.mana / cv.maxmana) },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
     j(st + 'movebar').animate(
       { width: w - w * (cv.moves / cv.maxmoves) },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
 
     j(ot + 'mini-hpbar').animate(
       { width: parseInt((cv.hp / cv.maxhp) * 100) + '%' },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
     j(ot + 'mini-manabar').animate(
       { width: parseInt((cv.mana / cv.maxmana) * 100) + '%' },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
     j(ot + 'mini-movebar').animate(
       { width: parseInt((cv.moves / cv.maxmoves) * 100) + '%' },
       1000,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
 
     if (cs.enemy && cs.enemy.length)
       j(st + 'tar-label').html(
-        "<span class='no-target'>" + cs.enemy + '</span>'
+        "<span class='no-target'>" + cs.enemy + '</span>',
       );
 
     if (cs.enemypct == -1) j(st + 'tar-label').empty();
@@ -147,7 +147,7 @@ var MistyBars = function (o) {
     j(st + 'tarbar').animate(
       { width: w - w * (cs.enemypct / 100) },
       1200,
-      'easeInOutExpo'
+      'easeInOutExpo',
     );
 
     if (!cs.exp) return;
@@ -155,14 +155,14 @@ var MistyBars = function (o) {
     var tnl = cs.tnl != -1 ? cs.tnl : null;
 
     j(st + 'exp-label').html(
-      tnl ? addCommas(cs.tnl) + '/' + addCommas(cs.enl) : addCommas(cs.exp)
+      tnl ? addCommas(cs.tnl) + '/' + addCommas(cs.enl) : addCommas(cs.exp),
     );
 
     if (tnl)
       j(st + 'expbar').animate(
         { width: w - w * (cs.tnl / cs.enl) },
         1000,
-        'easeInOutExpo'
+        'easeInOutExpo',
       );
   };
 

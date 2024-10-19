@@ -37,7 +37,7 @@ var Window = function (o) {
 
   var button = function (o) {
     j(id + ' .toolbar').prepend(
-      '<i class="icon ' + o.icon + ' tip" title="' + o.title + '"></i>'
+      '<i class="icon ' + o.icon + ' tip" title="' + o.title + '"></i>',
     );
     j(id + ' .' + o.icon).click(o.click);
   };
@@ -61,7 +61,7 @@ var Window = function (o) {
       .width(j(id).width());
 
     j(id + ' .tab-content').height(
-      j(id).height() - j(id + ' .nav-tabs').height()
+      j(id).height() - j(id + ' .nav-tabs').height(),
     );
 
     j(id + ' .tab-pane').each(function () {
@@ -117,7 +117,7 @@ var Window = function (o) {
         '" >\
 				<div class="content"></div>\
 			</div>\
-		'
+		',
     );
 
     if (handle) {
@@ -128,7 +128,7 @@ var Window = function (o) {
           (o.title || '&nbsp;') +
           '</div>\
 					<div class="toolbar"></div>\
-			</div>'
+			</div>',
       );
       o.handle = '.handle';
     } else j(id + ' .content').css({ top: 0 });
@@ -259,7 +259,7 @@ var Window = function (o) {
               function () {
                 resize();
                 savepos();
-              }
+              },
             );
 
           return;
@@ -422,7 +422,7 @@ var Window = function (o) {
         'Saving window position: #' +
           id +
           ' ' +
-          stringify(user.pref.win[view_id]['#' + id])
+          stringify(user.pref.win[view_id]['#' + id]),
       );
     });
 
@@ -495,7 +495,7 @@ var Window = function (o) {
 
     if (!j(id + ' .content .tabs').length) {
       j(id + ' .content').prepend(
-        '<ul class="tabs nav nav-tabs"></ul><div class="tab-content"></div>'
+        '<ul class="tabs nav nav-tabs"></ul><div class="tab-content"></div>',
       );
       j(id + ' .content').css('background-color', 'transparent');
       j(id + ' .tabs:hover').css({ cursor: 'move' });
@@ -515,11 +515,11 @@ var Window = function (o) {
     if (!t.after && !t.before) j(id + ' .nav-tabs').append(html);
     else if (t.before)
       j(html).insertBefore(
-        j(o.id + ' .nav-tabs a:contains("' + t.before + '")').parent()
+        j(o.id + ' .nav-tabs a:contains("' + t.before + '")').parent(),
       );
     else
       j(html).insertAfter(
-        j(o.id + ' .nav-tabs a:contains("' + t.after + '")').parent()
+        j(o.id + ' .nav-tabs a:contains("' + t.after + '")').parent(),
       );
 
     j(o.id + ' .tab-content').append(
@@ -531,7 +531,7 @@ var Window = function (o) {
         (i == 0 ? ' active' : '') +
         '">' +
         (t.html || '') +
-        '</div>'
+        '</div>',
     );
 
     if (t.scroll)

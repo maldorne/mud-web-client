@@ -58,7 +58,7 @@ var Socket = function (o) {
           client: o.client,
           ttype: o.ttype,
           name: window.user ? user.username : 'Guest',
-        })
+        }),
       );
     }
 
@@ -84,7 +84,7 @@ var Socket = function (o) {
 
     if (out)
       out.add(
-        '<br><span style="color: green;">Remote server has disconnected. Refresh page to reconnect.<br></span>'
+        '<br><span style="color: green;">Remote server has disconnected. Refresh page to reconnect.<br></span>',
       );
 
     if (o.onClose) o.onClose(evt);
@@ -157,7 +157,7 @@ var Socket = function (o) {
 
   var onError = function (evt) {
     out.add(
-      '<span style="font-size: 13px; color: red;">Error: telnet proxy may be down.<br></span>'
+      '<span style="font-size: 13px; color: red;">Error: telnet proxy may be down.<br></span>',
     );
   };
 
@@ -194,7 +194,7 @@ var Socket = function (o) {
       ws.send(msg + '\r\n');
     } else if (out)
       out.add(
-        '<span style="font-size: 13px; color: green;">WARNING: please connect first.<br></span>'
+        '<span style="font-size: 13px; color: green;">WARNING: please connect first.<br></span>',
       );
 
     return self;
@@ -267,7 +267,7 @@ var Socket = function (o) {
 
       if (mxp && mxp.length % 2 && !force) {
         console.log(
-          'mxp split protection waiting for more input: ' + mxp.length
+          'mxp split protection waiting for more input: ' + mxp.length,
         );
         console.log(t);
         buff = t;
@@ -413,7 +413,7 @@ var Socket = function (o) {
     t = Event.fire('before_html', t, self);
     t = t.replace(
       /([^"'])(http.*:\/\/[^\s\x1b"']+)/g,
-      '$1<a href="$2" target="_blank">$2</a>'
+      '$1<a href="$2" target="_blank">$2</a>',
     );
     t = Event.fire('internal_colorize', t, self);
 

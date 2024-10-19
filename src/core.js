@@ -1,8 +1,7 @@
 if (typeof WebSocket == 'undefined') {
   new Modal({
     title: 'Incompatible Browser',
-    html:
-      'The portal web app requires a modern browser. If you are using an older Internet Explorer version, we recommend installing <a target="_blank" href="http://www.google.com/chromeframe/">the Chrome Frame IE add-on from Google</a>. Or simply install Chrome or Firefox.',
+    html: 'The portal web app requires a modern browser. If you are using an older Internet Explorer version, we recommend installing <a target="_blank" href="http://www.google.com/chromeframe/">the Chrome Frame IE add-on from Google</a>. Or simply install Chrome or Firefox.',
     closeText: 'Dismiss',
   });
 }
@@ -45,14 +44,14 @@ if (Config.device.touch) {
   };
   j('head').append(
     '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />\
-			<meta name="apple-mobile-web-app-capable" content="yes">'
+			<meta name="apple-mobile-web-app-capable" content="yes">',
   );
 
   j('head').append(
-    '<link rel="apple-touch-startup-image" sizes="640x1136" href="/images/app-splash-5.png">'
+    '<link rel="apple-touch-startup-image" sizes="640x1136" href="/images/app-splash-5.png">',
   );
   j('head').append(
-    '<link rel="apple-touch-startup-image" sizes="640x960" href="/images/app-splash-4.png">'
+    '<link rel="apple-touch-startup-image" sizes="640x960" href="/images/app-splash-4.png">',
   );
 }
 
@@ -81,7 +80,7 @@ if (!Config.nocore) {
     j('.app').prepend(
       '<a class="right" style="opacity:0.5;margin-right: 8px" \
 		href="/component/comprofiler/login" target="_self">\
-		<i class="icon-sun"></i> login</a>'
+		<i class="icon-sun"></i> login</a>',
     );
 
   if (Config.kong) Config.ScrollView.title('Bedlam');

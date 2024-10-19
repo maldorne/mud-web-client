@@ -79,7 +79,8 @@ var Event = {
   create: function (event) {
     if (this.q[event]) {
       log(
-        'Event.js: This event already exists and will not be created: ' + event
+        'Event.js: This event already exists and will not be created: ' +
+          event,
       );
       return;
     }
@@ -91,7 +92,7 @@ var Event = {
     if (!this.q[event]) {
       log(
         'Event.js: This event does not exist and will not be destroyed: ' +
-          event
+          event,
       );
       return;
     }

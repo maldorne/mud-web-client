@@ -77,7 +77,7 @@ var Modal = function (o) {
 					<button class="btn btn-primary kbutton dismiss mo-dismiss">OK</button>\
 				</div>\
 			</div></div></div>\
-		'
+		',
     );
 
     buttons();
@@ -115,7 +115,7 @@ var Modal = function (o) {
             (b.keep ? '' : 'modal') +
             '">' +
             b.text +
-            '</button>'
+            '</button>',
         );
 
         if (b.send)
@@ -124,7 +124,7 @@ var Modal = function (o) {
               return function () {
                 Config.Socket.write(cmd);
               };
-            })(b.send)
+            })(b.send),
           );
 
         if (b.click) j('.modal-footer .custom-' + i).click(b.click);
@@ -139,14 +139,14 @@ var Modal = function (o) {
             n +
             '" data-dismiss="modal">' +
             i +
-            '</button>'
+            '</button>',
         );
         j('.modal-footer .custom-' + n).click(
           (function (cmd) {
             return function () {
               Config.Socket.write(cmd);
             };
-          })(o.buttons[i])
+          })(o.buttons[i]),
         );
         n++;
       }
@@ -158,7 +158,7 @@ var Modal = function (o) {
 
     j('.modal-footer').remove('.modal-links');
     j('.modal-footer').prepend(
-      '<div class="modal-links left" style="position: relative; z-index: 1; font-size: 11px; opacity: 0.7"></div>'
+      '<div class="modal-links left" style="position: relative; z-index: 1; font-size: 11px; opacity: 0.7"></div>',
     );
 
     if (o.links.pop)
@@ -170,7 +170,7 @@ var Modal = function (o) {
             (o.links[i].keep ? '' : 'modal') +
             '">' +
             o.links[i].text +
-            '</a><br>'
+            '</a><br>',
         );
         j('.modal-links .link-' + i).click(o.links[i].click);
         if (o.links[i].css) j('.modal-links .link-' + i).css(o.links[i].css);
@@ -179,14 +179,14 @@ var Modal = function (o) {
       var n = 0;
       for (var i in o.links) {
         j('.modal-links').append(
-          '<a class="link-' + n + '" data-dismiss="modal">' + i + '</a><br>'
+          '<a class="link-' + n + '" data-dismiss="modal">' + i + '</a><br>',
         );
         j('.modal-links .link-' + n).click(
           (function (cmd) {
             return function () {
               Config.Socket.write(cmd);
             };
-          })(o.links[i])
+          })(o.links[i]),
         );
         n++;
       }

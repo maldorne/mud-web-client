@@ -39,7 +39,7 @@ var Toolbar = function () {
           j(this).attr('id') +
           '" class="btn kbutton">' +
           (j(this).get(0).win.title() || j(this).attr('id')) +
-          '</button>'
+          '</button>',
       );
 
       if (!j(this).is(':visible'))

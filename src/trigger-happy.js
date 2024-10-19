@@ -60,7 +60,7 @@ var TriggerHappy = function (o) {
       try {
         triggers[t][3] = new RegExp(
           triggers[t][0].replace(/\$[0-9]/g, '([A-Za-z0-9-\'"]+)'),
-          'g'
+          'g',
         );
       } catch (ex) {
         log(ex);
@@ -72,7 +72,7 @@ var TriggerHappy = function (o) {
         triggers.length +
         '/' +
         (gTriggers.length + pTriggers.length) +
-        ' triggers.'
+        ' triggers.',
     );
   };
 

@@ -20,7 +20,7 @@ var ModalInput = function (o) {
         stringify({
           password1: msg,
           password2: j('.modal .me-pass2').val(),
-        })
+        }),
       );
     } else Config.Socket.write((o.before || '') + msg + (o.after || ''));
 
@@ -100,13 +100,13 @@ var ModalInput = function (o) {
       '</button>\
 			</div>\
 		</div></div></div>\
-	'
+	',
   );
 
   /* password reset is a special case */
   if (o.attr && (o.attr == 'reset' || o.attr == 'change')) {
     j('.modal-body').append(
-      '<br><input type="password" class="me-pass2" placeholder="re-enter password">'
+      '<br><input type="password" class="me-pass2" placeholder="re-enter password">',
     );
 
     j('.modal .me-send').addClass('disabled');
@@ -151,7 +151,7 @@ var ModalInput = function (o) {
           cls +
           '">' +
           b.text +
-          '</button>'
+          '</button>',
       );
 
       if (b.send)
@@ -160,7 +160,7 @@ var ModalInput = function (o) {
             return function () {
               Config.Socket.write(cmd);
             };
-          })(b.send)
+          })(b.send),
         );
 
       if (b.click) j('.modal-footer .custom-' + i).click(b.click);

@@ -118,7 +118,7 @@ var LoginPrompt = function (o) {
           stringify({
             username: user,
             password: pass,
-          })
+          }),
         );
       else Config.socket.write(user);
     } else Config.socket.write(user);

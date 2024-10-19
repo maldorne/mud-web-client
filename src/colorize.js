@@ -8,42 +8,42 @@ var Colorize = function (o) {
   var xterm;
 
   var ansi = {
-      '30': '#000', //black
+      30: '#000', //black
       '1;30': '#6E6E6E', //bright black
-      '31': '#bf1b00', //red
+      31: '#bf1b00', //red
       '1;31': '#ff193f', //bright red
-      '32': '#00ac00', //green
+      32: '#00ac00', //green
       '1;32': '#a1e577', //bright green
-      '33': '#DAA520', //yellow
+      33: '#DAA520', //yellow
       '1;33': '#f3df00', //bright yellow
-      '34': '#1f68d5', //blue
+      34: '#1f68d5', //blue
       '1;34': '#3680ee', //bright blue
-      '35': '#a501a7', //magenta
+      35: '#a501a7', //magenta
       '1;35': '#e100e4', //bright magenta
-      '36': '#01c8d4', //cyan
+      36: '#01c8d4', //cyan
       '1;36': '#5bedf6', //bright cyan
-      '37': '#dbdbdb', //off-white
+      37: '#dbdbdb', //off-white
       '1;37': '#fff; font-weight: bold', //bright white
-      '39': '#dbdbdb', //default
+      39: '#dbdbdb', //default
     },
     bgansi = {
-      '40': 'Black',
+      40: 'Black',
       '1;40': 'DimGray',
-      '41': 'Red',
+      41: 'Red',
       '1;41': 'OrangeRed',
-      '42': 'Green',
+      42: 'Green',
       '1;42': 'LightGreen,',
-      '43': 'GoldenRod',
+      43: 'GoldenRod',
       '1;43': 'Gold',
-      '44': 'Blue',
+      44: 'Blue',
       '1;44': 'LightSkyBlue',
-      '45': 'DarkOrchid',
+      45: 'DarkOrchid',
       '1;45': 'Magenta',
-      '46': 'Cyan',
+      46: 'Cyan',
       '1;46': 'LightCyan',
-      '47': 'FloralWhite',
+      47: 'FloralWhite',
       '1;47': 'White',
-      '49': 'Black',
+      49: 'Black',
       '1;49': 'DimGray',
     },
     other = {

@@ -244,11 +244,11 @@ function addCommas(nStr) {
 jQuery.fn.center = function () {
   this.css(
     'top',
-    Math.max(0, (jQuery(window).height() - jQuery(this).height()) / 2)
+    Math.max(0, (jQuery(window).height() - jQuery(this).height()) / 2),
   );
   this.css(
     'left',
-    Math.max(0, (jQuery(window).width() - jQuery(this).width()) / 2)
+    Math.max(0, (jQuery(window).width() - jQuery(this).width()) / 2),
   );
   return this;
 };

@@ -42,7 +42,7 @@ var ControlPanel = function () {
 
   j(id + ' .content').append(
     '<div style="width: 27%; border-right: 1px solid #222;" class="left gamelist nice"></div>\
-			<div class="left gamepanel" style="width: 72%; height: 100%"></div>'
+			<div class="left gamepanel" style="width: 72%; height: 100%"></div>',
   );
 
   if (touch) {
@@ -60,7 +60,7 @@ var ControlPanel = function () {
 
   var loadProfiles = function () {
     j(id + ' .gamelist').prepend(
-      '<div class="profiles"><a class="folder" data="profile-link"><i class="icon-folder-open-alt"></i> My Profiles</a><br></div>'
+      '<div class="profiles"><a class="folder" data="profile-link"><i class="icon-folder-open-alt"></i> My Profiles</a><br></div>',
     );
     if (pref.profiles) {
       for (var p in pref.profiles) {
@@ -80,7 +80,7 @@ var ControlPanel = function () {
             d[i].name +
             '"><i class="icon-star-empty"></i> ' +
             p +
-            '<br></a>'
+            '<br></a>',
         );
       }
     }
@@ -91,7 +91,7 @@ var ControlPanel = function () {
 
     j.get('/app/xml/mudconnect.xml', function (d) {
       j(id + ' .gamelist .profiles').after(
-        '<div class="tmc"><a class="tmc-list folder"><i class="icon-folder-close-alt"></i> Big List (A-Z)<br></a></div>'
+        '<div class="tmc"><a class="tmc-list folder"><i class="icon-folder-close-alt"></i> Big List (A-Z)<br></a></div>',
       );
 
       tmc = j(d).find('mud');
@@ -123,7 +123,7 @@ var ControlPanel = function () {
               name +
               '">' +
               name +
-              '<br></a>'
+              '<br></a>',
           );
       }
     });
@@ -131,7 +131,7 @@ var ControlPanel = function () {
 
   var loadSiteList = function () {
     j(id + ' .gamelist').append(
-      '<div class="sitelist"><a class="big-list folder" data="game-link"><i class="icon-folder-open-alt"></i> Site List<br></a></div>'
+      '<div class="sitelist"><a class="big-list folder" data="game-link"><i class="icon-folder-open-alt"></i> Site List<br></a></div>',
     );
 
     for (g = 0; g < d.length; g++) {
@@ -174,7 +174,7 @@ var ControlPanel = function () {
             d[g].name +
             '"><i class="icon-sun"></i> ' +
             d[g].name +
-            '<br></a>'
+            '<br></a>',
         );
       } catch (ex) {
         log(d[g]);
@@ -184,7 +184,7 @@ var ControlPanel = function () {
 
   var loadChat = function () {
     j(id + ' .gamelist').prepend(
-      '<div class="chatlist"><a class="chat-list folder" data="chat-link"><i class="icon-folder-open-alt"></i> Portal Chat<br></a></div>'
+      '<div class="chatlist"><a class="chat-list folder" data="chat-link"><i class="icon-folder-open-alt"></i> Portal Chat<br></a></div>',
     );
     var chan = ['Lobby', 'Players', 'Devs'];
 
@@ -194,7 +194,7 @@ var ControlPanel = function () {
           chan[i] +
           '"><i class="icon-comment-alt"></i> ' +
           chan[i] +
-          '<br></a>'
+          '<br></a>',
       );
   };
 
@@ -278,7 +278,7 @@ var ControlPanel = function () {
         '"></div><div class="left" style="padding-top: 4px">' +
         title +
         '<div style="height: 8px; clear: both"></div>' +
-        url
+        url,
     );
 
     if (mobile) return;
@@ -288,14 +288,14 @@ var ControlPanel = function () {
         '<br>\
 					<a class="kbutton save right tip" title="Save your preferences for this profile."><i class="icon-save"></i> save</a></div>\
 					<a class="kbutton pdel right tip" title="Delete this game profile."><i class="icon-remove"></i> delete</a></div>\
-					<div style="clear: both"></div>'
+					<div style="clear: both"></div>',
       );
     else
       t.append(
         '<br>\
 			<a class="kbutton save right tip" title="Save your preferences for this game."><i class="icon-save"></i> save</a></div>\
 			<a class="kbutton clone right tip" title="Create a profile for this game."><i class="icon-copy"></i> profile</a></div>\
-			<div style="clear: both"></div>'
+			<div style="clear: both"></div>',
       );
 
     t.append(
@@ -303,12 +303,12 @@ var ControlPanel = function () {
 				<li class="active"><a href="#macros" class="kbutton" data-toggle="tab"><i class="icon-retweet"></i> macros</a></li>\
 				<li><a href="#triggers" class="kbutton" data-toggle="tab"><i class="icon-reply"></i> triggers</a></li>\
 				<li><a href="#settings" class="kbutton settings" data-toggle="tab"><i class="icon-cog"></i> settings</a></li>\
-				</ul>'
+				</ul>',
     );
 
     if (!profile)
       j(id + ' .gamepanel ul').append(
-        '<span class="kbutton right" title="Configurations at this level will apply to all profiles for this game"><i class="icon-question"></i></span>'
+        '<span class="kbutton right" title="Configurations at this level will apply to all profiles for this game"><i class="icon-question"></i></span>',
       );
 
     t.append(
@@ -316,14 +316,14 @@ var ControlPanel = function () {
 				<div class="tab-pane active" id="macros"></div>\
 				<div class="tab-pane" id="triggers"></div>\
 				<div class="tab-pane" id="settings"><div class="scroll"></div></div>\
-				</div>'
+				</div>',
     );
 
     j(id + ' .gamepanel #macros').append(
-      'Macros support arguments (wildcards) in the format $1, $2... $*. The macro "$me -> Myname" will replace $me with Myname in any other macros or triggers.<br><br><a class="right kbutton macro-add"><i class="icon-plus"></i> new</a><div class="scroll"></div>'
+      'Macros support arguments (wildcards) in the format $1, $2... $*. The macro "$me -> Myname" will replace $me with Myname in any other macros or triggers.<br><br><a class="right kbutton macro-add"><i class="icon-plus"></i> new</a><div class="scroll"></div>',
     );
     j(id + ' .gamepanel #triggers').append(
-      'Triggers support wildcards in the format $1, $2... $9.<br><br><a class="right kbutton trigger-add"><i class="icon-plus"></i> new</a><div class="scroll"></div>'
+      'Triggers support wildcards in the format $1, $2... $9.<br><br><a class="right kbutton trigger-add"><i class="icon-plus"></i> new</a><div class="scroll"></div>',
     );
 
     if (window.user.id && pref) {
@@ -350,7 +350,7 @@ var ControlPanel = function () {
 					<i class="icon-star' +
               (i[3] ? '' : '-empty') +
               '"></i> \
-					<i class="icon-remove-sign"></i></div>'
+					<i class="icon-remove-sign"></i></div>',
           );
         }
 
@@ -368,7 +368,7 @@ var ControlPanel = function () {
 					<i class="icon-' +
               (i[2] ? 'check' : 'unchecked') +
               '"></i> \
-					<i class="icon-remove-sign"></i></div>'
+					<i class="icon-remove-sign"></i></div>',
           );
         }
       }
@@ -376,20 +376,20 @@ var ControlPanel = function () {
 
     var t = j(id + ' .gamepanel #settings .scroll');
     t.append(
-      '<i class="icon-check" id="official"></i> Auto-load official plugins<br>'
+      '<i class="icon-check" id="official"></i> Auto-load official plugins<br>',
     );
     t.append(
-      '<i class="icon-check" id="echo"></i> Echo commands to main window<br>'
+      '<i class="icon-check" id="echo"></i> Echo commands to main window<br>',
     );
     t.append(
-      '<i class="icon-check" id="keepcom"></i> Keep last command in input<br>'
+      '<i class="icon-check" id="keepcom"></i> Keep last command in input<br>',
     );
     t.append(
-      '<i class="icon-unchecked" id="spellcheck"></i> Spellcheck command input<br>'
+      '<i class="icon-unchecked" id="spellcheck"></i> Spellcheck command input<br>',
     );
     t.append('<i class="icon-check" id="mxp"></i> Enable MXP<br>');
     t.append(
-      '<i class="icon-unchecked" id="automulti"></i> Auto-paste multiline selects in multiline input<br>'
+      '<i class="icon-unchecked" id="automulti"></i> Auto-paste multiline selects in multiline input<br>',
     );
 
     if (G && G.settings)
@@ -435,7 +435,7 @@ var ControlPanel = function () {
       '<div><input type="text" style="width: 100px" placeholder="macro name"> <input type="text" placeholder="commands to send"> \
 				<i class="icon-check" title="Enable or disable this macro."></i> \
 				<i class="icon-star-empty" title="Favorite macros with no arguments will appear as Quick Buttons."></i> \
-				<i class="icon-remove-sign" title="Delete this macro."></i></div>'
+				<i class="icon-remove-sign" title="Delete this macro."></i></div>',
     );
     j('.gamepanel .scroll').getNiceScroll().resize();
     t.scrollTop(t[0].scrollHeight);
@@ -446,7 +446,7 @@ var ControlPanel = function () {
     t.append(
       '<div><input type="text" style="width: 100px" placeholder="trigger phrase"> <input type="text" placeholder="response"> \
 				<i class="icon-check" title="Enable or disable this trigger."></i> \
-				<i class="icon-remove-sign" title="Delete this trigger."></i></div>'
+				<i class="icon-remove-sign" title="Delete this trigger."></i></div>',
     );
     j('.gamepanel .scroll').getNiceScroll().resize();
     t.scrollTop(t[0].scrollHeight);
@@ -480,8 +480,7 @@ var ControlPanel = function () {
     if (window.user.guest) {
       new Modal({
         title: 'Unsupported Action',
-        text:
-          'Please register or login to be able to save your game preferences.',
+        text: 'Please register or login to be able to save your game preferences.',
         buttons: [
           {
             text: 'No, thanks',
@@ -570,7 +569,7 @@ var ControlPanel = function () {
           title: 'Preferences Saved',
           text: 'Your user preferences have been saved successfully.',
         });
-      }
+      },
     );
 
     if (Config.MacroPane) Config.MacroPane.init();
@@ -592,8 +591,7 @@ var ControlPanel = function () {
 
     var m = new Modal({
       title: 'New profile based on ' + j('.gamepanel').attr('name'),
-      text:
-        '<em>Entering an existing profile name will overwrite it.</em><br><br><input type="text" placeholder="enter profile name">',
+      text: '<em>Entering an existing profile name will overwrite it.</em><br><br><input type="text" placeholder="enter profile name">',
       buttons: [
         {
           text: 'Create',
@@ -644,7 +642,7 @@ var ControlPanel = function () {
   var linkify = function (t) {
     return t.replace(
       /([^"']|^)(http.*:\/\/[^\s\x1b"']+)/g,
-      '$1<a href="$2" target="_blank">$2</a>'
+      '$1<a href="$2" target="_blank">$2</a>',
     );
   };
 
@@ -672,7 +670,7 @@ var ControlPanel = function () {
 		<div class="input" style="width: 95%;height: 30px;margin-right: 40px; position: absolute; bottom: 6px;">\
 		<input class="chat-send send" autocomplete="on" autocapitalize="off" spellcheck="' +
         (Config.getSetting('spellcheck') ? 'true' : 'false') +
-        '" placeholder="type your message..." aria-live="polite"/></div></div>'
+        '" placeholder="type your message..." aria-live="polite"/></div></div>',
     );
 
     nice = j(id + ' .chat-' + channel).niceScroll({
@@ -703,7 +701,7 @@ var ControlPanel = function () {
               i[1].name +
               ': </span>' +
               linkify(i[1].msg) +
-              '<br>'
+              '<br>',
           );
         else if (i[1].channel == 'status')
           c.append(
@@ -713,7 +711,7 @@ var ControlPanel = function () {
               i[1].name +
               ' </span><span style="opacity: 0.7">' +
               linkify(i[1].msg) +
-              '</span><br>'
+              '</span><br>',
           );
       });
     } else if (mychannel == i[1].channel) {
@@ -724,7 +722,7 @@ var ControlPanel = function () {
           i[1].name +
           ': </span>' +
           linkify(i[1].msg) +
-          '<br>'
+          '<br>',
       );
     }
 
@@ -742,7 +740,7 @@ var ControlPanel = function () {
             name: user.username || 'guest',
             channel: mychannel,
             msg: j(this).val(),
-          })
+          }),
         );
         j(this).val('');
       }
@@ -759,7 +757,7 @@ var ControlPanel = function () {
           name: user.username || 'guest',
           channel: 'op',
           msg: 'joined chat.',
-        })
+        }),
       );
     } else {
       dump(c);
@@ -795,7 +793,7 @@ var ControlPanel = function () {
           name: user.username || 'guest',
           channel: 'op',
           msg: 'left chat.',
-        })
+        }),
       );
     }
   });

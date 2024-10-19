@@ -99,18 +99,18 @@ var MXP = function () {
     /* <color> tag */
     t = t.replace(
       /\x1b\[[1-7]z<color(.+?)>([^]+?)<\/color>\x1b\[[1-7]z/gi,
-      '\x1b<span style="color: $1"\x1b>$2\x1b</span\x1b>'
+      '\x1b<span style="color: $1"\x1b>$2\x1b</span\x1b>',
     );
 
     /* <c> tag */
     t = t.replace(
       /\x1b\[[1-7]z<c (.+?)>([^]+?)<\/c>\x1b\[[1-7]z/gi,
-      '\x1b<span style="color: $1"\x1b>$2\x1b</span\x1b>'
+      '\x1b<span style="color: $1"\x1b>$2\x1b</span\x1b>',
     );
 
     t = t.replace(
       /<a(|[^]+?)>([^]+?)<\/a>/gi,
-      '\x1b<a target="_blank" $1\x1b>$2\x1b</a\x1b>'
+      '\x1b<a target="_blank" $1\x1b>$2\x1b</a\x1b>',
     );
 
     /* conform send links with no href */
@@ -120,7 +120,7 @@ var MXP = function () {
     /* <send> simple & single-choice tag: turn into links, escape &lt, &gt */
     t = t.replace(
       /<send(|[^>]+)>(.+?)<\/send>/gi,
-      '\x1b<a class="mxp tip"$1\x1b>$2\x1b</a\x1b>'
+      '\x1b<a class="mxp tip"$1\x1b>$2\x1b</a\x1b>',
     );
 
     t = t.replace(/hint="([^|]+?)"/gi, 'title="$1"');
@@ -128,12 +128,12 @@ var MXP = function () {
     /* <font> support */
     t = t.replace(
       /\x1b\[[1-7]z<font([^]+?)>\x1b\[[1-7]z/gi,
-      '<font style="$1>'
+      '<font style="$1>',
     );
     t = t.replace(/<font([^]+?)color=([^ >]+)/gi, '<font$1color:$2;');
     t = t.replace(
       /<font([^]+?)back=([^ >]+)/gi,
-      '<font$1background-color:$2;'
+      '<font$1background-color:$2;',
     );
     t = t.replace(/<font([^]+?)face='([^']+)'/gi, "<font$1font-family:'$2';");
     t = t.replace(/<font([^]+?)face="([^"]+)"/gi, "<font$1font-family:'$2';");
@@ -145,11 +145,11 @@ var MXP = function () {
     /* <image> support */
     t = t.replace(
       /\x1b\[[1-7]z<image ([^]+?) url="([^]+?)">\x1b\[[1-7]z/gi,
-      '\x1b<img src="$2$1"\x1b>'
+      '\x1b<img src="$2$1"\x1b>',
     );
     t = t.replace(
       /\x1b\[[1-7]z<image([^]+?)url="([^]+?)">\x1b\[[1-7]z/gi,
-      '\x1b<img$1src="$2"\x1b>'
+      '\x1b<img$1src="$2"\x1b>',
     );
 
     //if (Config.debug)
@@ -163,12 +163,12 @@ var MXP = function () {
 
     t = t.replace(
       /\x1b\[[1-7]z<[^\x1b>]+>/g,
-      ''
+      '',
     ); /* strip any unsupported tags */
     t = t.replace(/<[^\x1b>]+?>\x1b\[[1-7]z/g, '');
     t = t.replace(
       /\x1b\[[1-7]z/g,
-      ''
+      '',
     ); /* strip any remaining enclosures, for now */
 
     return t;
@@ -181,15 +181,15 @@ var MXP = function () {
           t
             .replace(
               /<frame (.+?) (open)/gi,
-              '<span class="iframe" $1 open="1"'
+              '<span class="iframe" $1 open="1"',
             )
             .replace(/<frame (.+?) (eof)/gi, '<span class="iframe" $1 eof="1"')
             .replace(
               /<frame (.+?) (close)/gi,
-              '<span class="iframe" $1 close="1"'
+              '<span class="iframe" $1 close="1"',
             )
-            .replace(/<frame/gi, '<span class="iframe"')
-        )
+            .replace(/<frame/gi, '<span class="iframe"'),
+        ),
       );
 
       j('#mxpf .iframe').each(function () {
@@ -297,10 +297,10 @@ var MXP = function () {
             .replace(/\n/g, '<br>')
             .replace(
               /\x1b\[[1-7]z<dest ([^>]+)/gi,
-              '<div class="dest" name="$1"'
+              '<div class="dest" name="$1"',
             )
-            .replace(/\x1b\[[1-7]z<\/dest>/gi, '</div>')
-        )
+            .replace(/\x1b\[[1-7]z<\/dest>/gi, '</div>'),
+        ),
       );
 
       j('#mxpf .dest').each(function () {
@@ -386,7 +386,7 @@ var MXP = function () {
           o[i] +
           '">' +
           (hint[i + 1] || o[i]).replace(/[0-9]/g, '') +
-          '</a>'
+          '</a>',
       );
 
     j('.mxp-dropdown').css({

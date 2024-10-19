@@ -20,7 +20,7 @@ var GroupTab = function (o) {
     });
 
     j(o.id).append(
-      '<div class="list" style="clear:both; min-height: 30px; height: 100%; position: relative"></div>'
+      '<div class="list" style="clear:both; min-height: 30px; height: 100%; position: relative"></div>',
     );
     // j('.chat-tabs a:first').click();
     j(o.id + ' .group-member').click(function () {
@@ -101,7 +101,7 @@ var GroupTab = function (o) {
 						</div>\
 							<div class="group-aff"></div>\
 					</div>\
-					'
+					',
       );
     }
 
@@ -167,7 +167,7 @@ var GroupTab = function (o) {
             affs[i].name +
             ': ' +
             affs[i].duration +
-            '</div>'
+            '</div>',
         );
       else
         t.append(
@@ -175,7 +175,7 @@ var GroupTab = function (o) {
             affs[i].name +
             ': ' +
             affs[i].duration +
-            '</div>'
+            '</div>',
         );
     }
   };

@@ -124,7 +124,7 @@ var ScrollView = function (o) {
         }
       } else {
         j(id + ' .out').after(
-          '<div class="freeze">' + j(id + ' .out').html() + '</div>'
+          '<div class="freeze">' + j(id + ' .out').html() + '</div>',
         );
         j(id + ' .out').width('52%');
         freeze = j(id + ' .freeze').niceScroll({
@@ -146,7 +146,7 @@ var ScrollView = function (o) {
 			<input class="send" autocomplete="on" autocorrect="off" autocapitalize="off" spellcheck="' +
       (Config.getSetting('spellcheck') ? 'true' : 'false') +
       '" placeholder="type a command..." aria-live="polite"/></div>\
-	'
+	',
   );
 
   if (mobile) {
@@ -157,7 +157,7 @@ var ScrollView = function (o) {
     });
   } else {
     j(id + ' .input').append(
-      '<a class="kbutton multiline tip" title="Send multi-line text." style="height: 16px !important; padding: 4px 8px !important; margin-left: 6px; position: relative; top: 3px;"><i class="icon-align-justify"></i></a>'
+      '<a class="kbutton multiline tip" title="Send multi-line text." style="height: 16px !important; padding: 4px 8px !important; margin-left: 6px; position: relative; top: 3px;"><i class="icon-align-justify"></i></a>',
     );
 
     multi = function (e, text) {
@@ -274,7 +274,7 @@ var ScrollView = function (o) {
         //var touch = e.touches[0];
         //alert(touch.pageX + " - " + touch.pageY);
       },
-      false
+      false,
     );
 
     j(id + ' .send').keydown(function (e) {
@@ -385,7 +385,7 @@ var ScrollView = function (o) {
       add(
         '<span style="font-size: 12px; color: gold; opacity: 0.6">' +
           msg +
-          '</span><br>'
+          '</span><br>',
       );
     }
   };

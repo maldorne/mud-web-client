@@ -70,7 +70,7 @@ var Mapper = function (o) {
     if (!a) return;
 
     j(map).append(
-      '<img class="ani" src="' + a.img + a.frames[0] + '.png' + '">'
+      '<img class="ani" src="' + a.img + a.frames[0] + '.png' + '">',
     );
 
     j('.ani').css(getpos(was));
@@ -108,7 +108,7 @@ var Mapper = function (o) {
 
           console.log(data);
         },
-        'text'
+        'text',
       );
     });
   };
@@ -165,7 +165,7 @@ var Mapper = function (o) {
       'mapper.go: scrolled to: x' +
         j(map).scrollLeft() +
         ' y' +
-        j(map).scrollTop()
+        j(map).scrollTop(),
     );
 
     !nice || nice.resize();
@@ -211,7 +211,7 @@ var Mapper = function (o) {
       '\
 			<img id="map" class="pointer" style="max-width: none; max-height: none; z-index: 1; position: absolute" oncontextmenu="return false;">\
 			<img id="marker" class="tip" style="width: 54px; height: 54px; z-index: 2; position: absolute; display: none" src="/aaralon/images/brush.png"></img>\
-		'
+		',
     );
 
     j(o.id).prepend(
@@ -219,7 +219,7 @@ var Mapper = function (o) {
 			<div class="title" style="white-space: nowrap; text-overflow: ellipsis; font-size: ' +
         (o.mini ? 10 : 13) +
         'px;"></div>\
-		</div>'
+		</div>',
     );
 
     loadImage(path + 'Calandor.jpg', img);
@@ -252,11 +252,11 @@ var Mapper = function (o) {
       j('#bar #home').text().has('recall')
     )
       j('#bar #home').html(
-        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> home'
+        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> home',
       );
     else if (j('#bar #home').text().has('home'))
       j('#bar #home').html(
-        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> recall'
+        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> recall',
       );
   };
 
