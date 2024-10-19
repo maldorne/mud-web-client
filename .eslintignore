@@ -1,7 +1,0 @@
-!.*.json
-package.json
-package-lock.json
-*.md
-*.html
-public/
-node_modules/
