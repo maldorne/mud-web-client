@@ -24,7 +24,7 @@ function getSettings() {
 }
 
 export const Config = {
-  debug: true, //param('debug') || 0,
+  debug: param('debug') || 0,
   host: param('host') || 'muds.maldorne.org',
   port: param('port') || '5010',
   name: param('name') || 'House of Maldorne',
@@ -48,6 +48,7 @@ export const Config = {
     : ';',
   proxy: 'wss://play.maldorne.org:6200/',
   view: `${param('host')}:${param('port')}:${window.screen.width}x${window.screen.height}`,
+  plaintext: param('plaintext') || 0,
 
   device: {
     touch: 'ontouchstart' in window,

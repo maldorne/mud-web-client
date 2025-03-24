@@ -3,12 +3,6 @@ import { Event } from './event.js';
 import { Colorize } from './colorize.js';
 import { log, stringify } from './utils.js';
 
-// import {
-//   Base64Reader,
-//   Utf8Translator,
-//   TextReader,
-//   CharReader,
-// } from './lib/base64.js';
 import {
   Base64Reader,
   Utf8Translator,
@@ -16,7 +10,7 @@ import {
   Inflator,
   CharReader,
 } from './lib/inflate.js';
-// import { ZLIB } from './lib/zlib-inflate.js';
+import { ZLIB } from './lib/zlib-inflate.js';
 
 export class Socket {
   constructor(options) {
@@ -158,7 +152,13 @@ export class Socket {
   };
 
   processIncomingData(data) {
-    console.log('LOLOLO', data);
+    log('process incoming data', data);
+
+    if (Config.plaintext) {
+      this.buffer += data;
+      this.process();
+      return;
+    }
 
     if (Config.base64) {
       try {
@@ -258,7 +258,7 @@ export class Socket {
 
   sendBinary(message) {
     if (!this.connected) {
-      console.log('attempt to sendBin before socket connect');
+      log('attempt to sendBin before socket connect');
       return this;
     }
     log(`Socket.sendBin: ${message}`);
@@ -268,7 +268,7 @@ export class Socket {
 
   sendMSDP(message) {
     if (!this.connected) {
-      console.log('attempt to sendMSDP before socket connect');
+      log('attempt to sendMSDP before socket connect');
       return this;
     }
     log(`Socket.sendMSDP: ${stringify(message)}`);
@@ -278,7 +278,7 @@ export class Socket {
 
   sendGMCP(message) {
     if (!this.connected) {
-      console.log('attempt to sendGMCP before socket connect');
+      log('attempt to sendGMCP before socket connect');
       return this;
     }
     this.ws.send(stringify({ gmcp: message }));
@@ -486,6 +486,29 @@ export class Socket {
     this.buffer = '';
     Config.mxp.disable();
     this.initializeSocket();
+  }
+
+  type() {
+    return this.options.type;
+  }
+
+  write(data) {
+    if (this.connected) {
+      this.ws.send(data + '\r\n');
+      log(`Socket.write: ${data}`);
+    }
+  }
+
+  getProxy() {
+    return this.proxy;
+  }
+
+  getSocket() {
+    return this.ws;
+  }
+
+  connected() {
+    return this.connected;
   }
 
   // createInterface() {
