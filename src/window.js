@@ -475,7 +475,7 @@ export class Window {
 
   dock(options) {
     const target = this.addTab(options);
-    console.log(`request to dock window: ${options.id} -> ${target}`);
+    log(`request to dock window: ${options.id} -> ${target}`);
 
     j(options.id)
       .detach()

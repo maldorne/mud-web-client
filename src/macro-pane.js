@@ -148,7 +148,7 @@ export class MacroPane {
       let result = substitution;
       messageArgs.slice(1).forEach((arg, index) => {
         result = result.replace(`$${index + 1}`, arg, 'g');
-        console.log(result);
+        log(result);
       });
 
       return this.replaceVariables(result);

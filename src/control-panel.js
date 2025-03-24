@@ -175,7 +175,7 @@ export class ControlPanel {
         }
 
         if (!game.host || !game.port) {
-          console.log('Skipping game:', stringify(game));
+          log('Skipping game:', stringify(game));
           return;
         }
 

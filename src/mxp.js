@@ -98,7 +98,7 @@ export class MXP {
     }
 
     if (text.includes('\xff\xfb\x5b')) {
-      console.log('Got IAC WILL MXP -> BEGIN MXP');
+      log('Got IAC WILL MXP -> BEGIN MXP');
       text = text.replace(/.\xff\xfb\x5b/, '');
       if (!this.enabled) {
         j('body').append('<div id="mxpf" style="display: none"></div>');

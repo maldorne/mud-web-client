@@ -339,10 +339,9 @@ export class Socket {
       }
     }
 
-    // Use string includes instead of custom 'has' method
-    if (!t.includes('portal.chatlog')) {
-      log(t);
-    }
+    // if (!t.includes('portal.chatlog')) {
+    //   log(t);
+    // }
 
     t = Event.fire('before_process', t);
 

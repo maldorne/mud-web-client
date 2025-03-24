@@ -32,7 +32,7 @@ var LoginPrompt = function (o) {
     log(ex);
   }
 
-  console.log(o);
+  log(o);
 
   var shown = function () {
     return j('.modal.login-prompt').length;
