@@ -48,7 +48,7 @@ export const Config = {
     : ';',
   proxy: 'wss://play.maldorne.org:6200/',
   view: `${param('host')}:${param('port')}:${window.screen.width}x${window.screen.height}`,
-  plaintext: param('plaintext') || 0,
+  uncompressed: param('uncompressed') || 0,
 
   device: {
     touch: 'ontouchstart' in window,

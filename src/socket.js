@@ -154,10 +154,29 @@ export class Socket {
   processIncomingData(data) {
     log('process incoming data', data);
 
-    if (Config.plaintext) {
+    // Add MUSH-specific protocol detection
+    // if (data.startsWith('\xFF')) {
+    //   log('MUSH protocol sequence detected');
+    //   // Strip the IAC byte if it's alone
+    //   if (data.length === 1) {
+    //     return '';
+    //   }
+    // }
+
+    if (Config.uncompressed) {
+      // Add debug logging for control characters
+      if (Config.debug) {
+        const chars = Array.from(data).map((char) => ({
+          char: char,
+          code: char.charCodeAt(0),
+          hex: char.charCodeAt(0).toString(16),
+        }));
+        log('Raw incoming data characters:', chars);
+      }
+
       this.buffer += data;
-      this.process();
-      return;
+
+      return this.process();
     }
 
     if (Config.base64) {
@@ -171,7 +190,7 @@ export class Socket {
         this.buffer += data;
       }
 
-      return process();
+      return this.process();
     }
 
     if (!this.zlibState.lib) {
