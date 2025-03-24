@@ -1,64 +1,76 @@
-var Toolbar = function () {
-  var init = function () {
+import jQuery from 'jquery';
+import { Event } from './event.js';
+
+const j = jQuery;
+
+export class Toolbar {
+  constructor() {
+    this.init();
+  }
+
+  init() {
     j('body').append('<div id="tmp-toolbar" class="tmp-toolbar"></div>');
 
-    j('#tmp-toolbar').on('click', 'button', function (e) {
+    j('#tmp-toolbar').on('click', 'button', (e) => {
       e.stopPropagation();
 
-      var t = j(e.target).attr('href');
-      var win = j(t).get(0).win;
+      const target = j(e.target).attr('href');
+      const win = j(target).get(0).win;
+      const button = j(e.target);
 
-      if (j(this).hasClass('active')) {
+      if (button.hasClass('active')) {
         win.hide();
-        j(this).removeClass('active').addClass('disabled');
-      } else if (j(this).hasClass('disabled')) {
+        button.removeClass('active').addClass('disabled');
+      } else if (button.hasClass('disabled')) {
         win.show();
-        j(this).removeClass('disabled').addClass('active');
+        button.removeClass('disabled').addClass('active');
       } else {
         win.front();
         j('#tmp-toolbar button').removeClass('active');
-        j(this).addClass('active');
+        button.addClass('active');
       }
     });
 
-    Event.listen('window_open', update);
-    Event.listen('window_close', update);
-    Event.listen('window_show', update);
-    Event.listen('window_hide', update);
-    Event.listen('window_front', front);
+    // Event listeners
+    Event.listen('window_open', this.update.bind(this));
+    Event.listen('window_close', this.update.bind(this));
+    Event.listen('window_show', this.update.bind(this));
+    Event.listen('window_hide', this.update.bind(this));
+    Event.listen('window_front', this.front.bind(this));
 
-    return self;
-  };
+    return this;
+  }
 
-  var update = function (a) {
+  update() {
     j('#tmp-toolbar').empty();
 
     j('.window').each(function () {
-      j('#tmp-toolbar').append(
-        '<button href="#' +
-          j(this).attr('id') +
-          '" class="btn kbutton">' +
-          (j(this).get(0).win.title() || j(this).attr('id')) +
-          '</button>',
-      );
+      const $window = j(this);
+      const id = $window.attr('id');
+      const title = $window.get(0).win.title() || id;
 
-      if (!j(this).is(':visible'))
+      const button = `
+        <button href="#${id}" class="btn kbutton">
+          ${title}
+        </button>
+      `;
+
+      j('#tmp-toolbar').append(button);
+
+      if (!$window.is(':visible')) {
         j('#tmp-toolbar .btn:last').addClass('disabled');
+      }
     });
 
-    return self;
-  };
+    return this;
+  }
 
-  var front = function (a) {
+  front(windowSelector) {
     j('#tmp-toolbar button').removeClass('active');
-    j('#tmp-toolbar button[href="' + a + '"]').addClass('active');
-  };
+    j(`#tmp-toolbar button[href="${windowSelector}"]`).addClass('active');
+  }
+}
 
-  var self = {
-    update: update,
-    front: front,
-    init: init,
-  };
-
-  return self;
-};
+// Example usage:
+// import { Toolbar } from './toolbar.js';
+// const toolbar = new Toolbar();

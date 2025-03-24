@@ -1,449 +1,489 @@
-var ScrollView = function (o) {
-  var self = this,
-    ws = {},
-    sesslog = '',
-    freeze,
-    mobile = Config.device.mobile,
-    touch = Config.device.touch,
-    multi;
-  var cmds = [],
-    cmdi = 0,
-    echo = 1;
-  var keepcom =
-    Config.getSetting('keepcom') == null || Config.getSetting('keepcom') == 1;
+import jQuery from 'jquery';
+import { saveAs } from 'file-saver';
+import 'jquery-ui-dist/jquery-ui';
+import 'jquery.nicescroll';
+import './lib/fortawesome.js';
 
-  var o = o || {
-    css: {
-      width: Config.width,
-      height: Config.height,
-      top: Config.top,
-      left: Config.left,
-    },
-    local: 1 /* local echo */,
-    scrollback: 30 * 1000,
-  };
+import { Config } from './config.js';
+import { Event } from './event.js';
+import { Window } from './window.js';
+import { Modal } from './modal.js';
+import { Socket } from './socket.js';
+import { Colorize } from './colorize.js';
+import { MacroPane } from './macro-pane.js';
+import { TriggerHappy } from './trigger-happy.js';
+import { log } from './utils.js';
 
-  if (Config.kong) o.css.height = j(window).height() - 3;
+const j = jQuery;
 
-  var id = '#scroll-view';
+export class ScrollView {
+  constructor(options = {}) {
+    this.options = {
+      css: {
+        width: Config.width,
+        height: Config.height,
+        top: Config.top,
+        left: Config.left,
+      },
+      local: 1 /* local echo */,
+      scrollback: 30 * 1000,
+      ...options,
+    };
 
-  o.local =
-    Config.getSetting('echo') == null || Config.getSetting('echo') == 1;
-  o.echo = o.echo || 1;
+    this.id = '#scroll-view';
+    this.ws = {};
+    this.sesslog = '';
+    this.freeze = null;
+    this.mobile = Config.device.mobile;
+    this.touch = Config.device.touch;
+    this.multi = null;
+    this.cmds = [];
+    this.cmdi = 0;
+    // this.echo = true;
+    this.keepcom = Config.getSetting('keepcom') ?? true;
 
-  var win = new Window({
-    id: id,
-    css: o.css,
-    class: 'scroll-view nofade',
-    master: !Config.notrack,
-    closeable: Config.ControlPanel,
-  });
+    if (Config.kong) {
+      this.options.css.height = j(window).height() - 3;
+    }
 
-  if (mobile) {
-    j('#page').css({
-      background: 'none no-repeat fixed 0 0 #000000',
-      margin: '0px auto',
-    });
+    this.options.local =
+      Config.getSetting('echo') == null || Config.getSetting('echo') == true;
+    this.options.echo = this.options.echo || true;
 
-    j('body').css({
-      width: '100%',
-      height: '100%',
-      overflow: 'auto',
-    });
+    this.initializeWindow();
+    this.setupButtons();
+    this.setupContent();
+    this.setupEventListeners();
+    this.initializeSocket();
 
-    win.maximize();
+    // return this.createInterface();
   }
 
-  if (touch) j(id).css({ top: 0, left: 0 });
-
-  win.button({
-    title: 'Reconnect.',
-    icon: 'icon-refresh',
-    click: function () {
-      echo('Attempting to reconnect...');
-      Config.socket.reconnect();
-    },
-  });
-
-  win.button({
-    title: 'Increase the font size.',
-    icon: 'icon-zoom-in',
-    click: function (e) {
-      var v = parseInt(j(id + ' .out').css('fontSize'));
-      j(id + ' .out').css({
-        fontSize: ++v + 'px',
-        lineHeight: v + 5 + 'px',
-      });
-      j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-      e.stopPropagation();
-      return false;
-    },
-  });
-
-  win.button({
-    title: 'Decrease the font size.',
-    icon: 'icon-zoom-out',
-    click: function (e) {
-      var v = parseInt(j(id + ' .out').css('fontSize'));
-      j(id + ' .out').css({
-        fontSize: --v + 'px',
-        lineHeight: v + 5 + 'px',
-      });
-      j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-      e.stopPropagation();
-      return false;
-    },
-  });
-
-  win.button({
-    title: 'Download a session log.',
-    icon: 'icon-download-alt',
-    click: function (e) {
-      var blob = new Blob(sesslog.split(), {
-        type: 'text/plain;charset=utf-8',
-      });
-      saveAs(blob, 'log-' + Config.host + '-' + new Date().ymd() + '.txt');
-      e.stopPropagation();
-      return false;
-    },
-  });
-
-  //if (Config.dev)
-  win.button({
-    title: 'Toggle a freezepane.',
-    icon: 'icon-columns',
-    click: function (e) {
-      if (j(id + ' .freeze').length) {
-        try {
-          freeze.remove();
-          j(id + ' .freeze').remove();
-          j(id + ' .out').width('98%');
-          j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-        } catch (ex) {
-          log(ex);
-        }
-      } else {
-        j(id + ' .out').after(
-          '<div class="freeze">' + j(id + ' .out').html() + '</div>',
-        );
-        j(id + ' .out').width('52%');
-        freeze = j(id + ' .freeze').niceScroll({
-          cursorwidth: 7,
-          cursorborder: 'none',
-        });
-        j(id + ' .freeze').scrollTop(j(id + ' .freeze').prop('scrollHeight'));
-        j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-      }
-      e.stopPropagation();
-      return false;
-    },
-  });
-
-  j(id + ' .content').append(
-    '\
-		<div class="out nice"></div>\
-		<div class="input">\
-			<input class="send" autocomplete="on" autocorrect="off" autocapitalize="off" spellcheck="' +
-      (Config.getSetting('spellcheck') ? 'true' : 'false') +
-      '" placeholder="type a command..." aria-live="polite"/></div>\
-	',
-  );
-
-  if (mobile) {
-    j(id + ' .out').css({
-      'font-family': 'DejaVu Sans Mono',
-      'font-size': '11px',
-      height: '90%',
+  initializeWindow() {
+    this.win = new Window({
+      id: this.id,
+      css: this.options.css,
+      class: 'scroll-view nofade',
+      master: !Config.notrack,
+      closeable: Config.ControlPanel,
     });
-  } else {
-    j(id + ' .input').append(
-      '<a class="kbutton multiline tip" title="Send multi-line text." style="height: 16px !important; padding: 4px 8px !important; margin-left: 6px; position: relative; top: 3px;"><i class="icon-align-justify"></i></a>',
-    );
 
-    multi = function (e, text) {
-      var modal = new Modal({
+    if (this.mobile) {
+      j('#page').css({
+        background: 'none no-repeat fixed 0 0 #000000',
+        margin: '0px auto',
+      });
+
+      j('body').css({
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
+      });
+
+      this.win.maximize();
+    }
+
+    if (this.touch) {
+      j(this.id).css({ top: 0, left: 0 });
+    }
+  }
+
+  setupButtons() {
+    this.win.button({
+      title: 'Reconnect.',
+      icon: 'fa-solid fa-rotate',
+      click: () => {
+        this.echo('Attempting to reconnect...');
+        Config.socket.reconnect();
+      },
+    });
+
+    this.win.button({
+      title: 'Increase the font size.',
+      icon: 'fa-solid fa-magnifying-glass-plus',
+      click: (e) => {
+        const output = j(`${this.id} .out`);
+        const fontSize = parseInt(output.css('fontSize'));
+        output.css({
+          fontSize: `${fontSize + 1}px`,
+          lineHeight: `${fontSize + 6}px`,
+        });
+        output.scrollTop(output.prop('scrollHeight'));
+        e.stopPropagation();
+        return false;
+      },
+    });
+
+    this.win.button({
+      title: 'Decrease the font size.',
+      icon: 'fa-solid fa-magnifying-glass-minus',
+      click: (e) => {
+        const output = j(`${this.id} .out`);
+        const fontSize = parseInt(output.css('fontSize'));
+        output.css({
+          fontSize: `${fontSize - 1}px`,
+          lineHeight: `${fontSize + 4}px`,
+        });
+        output.scrollTop(output.prop('scrollHeight'));
+        e.stopPropagation();
+        return false;
+      },
+    });
+
+    this.win.button({
+      title: 'Download a session log.',
+      icon: 'fa-solid fa-download',
+      click: (e) => {
+        const blob = new Blob([this.sesslog], {
+          type: 'text/plain;charset=utf-8',
+        });
+        saveAs(
+          blob,
+          `log-${Config.host}-${new Date().toISOString().split('T')[0]}.txt`,
+        );
+        e.stopPropagation();
+        return false;
+      },
+    });
+
+    this.win.button({
+      title: 'Toggle a freezepane.',
+      icon: 'fa-solid fa-columns',
+      click: (e) => this.toggleFreezepane(e),
+    });
+  }
+
+  toggleFreezepane(e) {
+    const output = j(`${this.id} .out`);
+    const freezePane = j(`${this.id} .freeze`);
+
+    if (freezePane.length) {
+      try {
+        this.freeze?.remove();
+        freezePane.remove();
+        output.width('98%');
+        output.scrollTop(output.prop('scrollHeight'));
+      } catch (error) {
+        log(error);
+      }
+    } else {
+      output.after(`<div class="freeze">${output.html()}</div>`);
+      output.width('52%');
+      this.freeze = j(`${this.id} .freeze`).niceScroll({
+        cursorwidth: 7,
+        cursorborder: 'none',
+      });
+      j(`${this.id} .freeze`).scrollTop(
+        j(`${this.id} .freeze`).prop('scrollHeight'),
+      );
+      output.scrollTop(output.prop('scrollHeight'));
+    }
+    e.stopPropagation();
+    return false;
+  }
+
+  setupContent() {
+    const spellcheck = Config.getSetting('spellcheck');
+
+    j(`${this.id} .tab-content`).append(`
+      <div class="out nice"></div>
+      <div class="input">
+        <input class="send" 
+               autocomplete="on" 
+               autocorrect="off" 
+               autocapitalize="off" 
+               spellcheck="${spellcheck ? 'true' : 'false'}"
+               placeholder="type a command..." 
+               aria-live="polite"/>
+      </div>
+    `);
+
+    if (this.mobile) {
+      j(`${this.id} .out`).css({
+        'font-family': 'DejaVu Sans Mono',
+        'font-size': '11px',
+        height: '90%',
+      });
+    } else {
+      this.setupDesktopFeatures();
+    }
+
+    j(`${this.id} .out`).niceScroll({
+      cursorwidth: 7,
+      cursorborder: 'none',
+      railoffset: { top: -2, left: -2 },
+    });
+  }
+
+  setupDesktopFeatures() {
+    const multilineId = `multiline-${Math.random().toString(36).substr(2, 9)}`;
+
+    j(`${this.id} .input`).append(`
+      <a class="kbutton multiline tip ${multilineId}" 
+         title="Send multi-line text." 
+         style="height: 16px !important; padding: 4px 8px !important; margin-left: 6px; position: relative; top: 3px;">
+        <i class="fa-solid fa-align-justify"></i>
+      </a>
+    `);
+
+    j(`.${multilineId}`).click(this.handleMultiline);
+
+    this.setupMultilineInput();
+    this.setupAutocomplete();
+  }
+
+  setupMultilineInput() {
+    const handleMultiline = (e, text = '') => {
+      const spellcheck = Config.getSetting('spellcheck');
+
+      new Modal({
         title: 'Multi-Line Input',
-        text:
-          '<textarea class="multitext" autocorrect="off" autocapitalize="off" spellcheck="' +
-          (Config.getSetting('spellcheck') ? 'true' : 'false') +
-          '">' +
-          (text || '') +
-          '</textarea>',
-        closeable: 1,
+        text: `
+          <textarea class="multitext" 
+                    autocorrect="off" 
+                    autocapitalize="off" 
+                    spellcheck="${spellcheck ? 'true' : 'false'}">
+            ${text}
+          </textarea>
+        `,
+        closeable: true,
         buttons: [
           {
             text: 'Send',
-            click: function () {
-              var msg = j('.multitext').val().split('\n');
-              var ws = Config.Socket.getSocket();
-              for (var i = 0; i < msg.length; i++) {
-                var go = (function (msg) {
-                  return function () {
-                    ws.send(msg + '\r\n');
-                    echo(msg);
-                    //cmds.push(msg);
-                    //cmdi = cmds.length;
-                  };
-                })(msg[i]);
-                setTimeout(go, 100 * (i + 1));
-              }
+            click: () => {
+              const messages = j('.multitext').val().split('\n');
+              const socket = Config.Socket.getSocket();
+
+              messages.forEach((msg, index) => {
+                setTimeout(
+                  () => {
+                    socket.send(msg + '\r\n');
+                    this.echo(msg);
+                  },
+                  100 * (index + 1),
+                );
+              });
             },
           },
-          {
-            text: 'Cancel',
-          },
+          { text: 'Cancel' },
         ],
       });
 
-      j('#modal').on('shown', function () {
+      j('#modal').on('shown', () => {
         j('.multitext').focus();
-        //j('#modal').resizable();
       });
 
       if (e) e.stopPropagation();
       return false;
     };
 
-    j(id).on('click', '.multiline', multi);
+    j(this.id).on('click', '.multiline', handleMultiline);
+  }
 
-    if (!Config.embed && !Config.kong)
-      j(id + ' .send').autocomplete({
+  setupAutocomplete() {
+    if (!Config.embed && !Config.kong) {
+      j(`${this.id} .send`).autocomplete({
         appendTo: 'body',
         minLength: 2,
-        source: function (request, response) {
-          var c = cmds.filter(function (v, i, a) {
-            return a.indexOf(v) == i;
-          });
-          var results = j.ui.autocomplete.filter(c, request.term);
+        source: (request, response) => {
+          const uniqueCmds = [...new Set(this.cmds)];
+          const results = j.ui.autocomplete.filter(uniqueCmds, request.term);
           response(results.slice(0, 5));
         },
       });
+    }
   }
 
-  j(id + ' .out').niceScroll({
-    cursorwidth: 7,
-    cursorborder: 'none',
-    railoffset: { top: -2, left: -2 },
-  });
+  setupEventListeners() {
+    this.setupInputHandlers();
+    this.setupColorization();
+    this.setupLogging();
+  }
 
-  /*
-	j(id).on('mouseup', '.out, .freeze', function() {
-		var t;
-		if ((t = getSelText())) {
-		
-			if (t.match(/\n/) && Config.getSetting('automulti'))
-				multi(null, t);
-			else
-				j(id + ' .send').val(j(id + ' .send').val()+t);
-		}
-	});
-	
-	if (!Config.device.touch)
-		j(id).on('mouseup', '.out, .freeze', function() {
-			if (!j(':focus').is('input, textarea'))
-				j(id + ' .send').focus();
-		});
-	*/
+  setupInputHandlers() {
+    const input = j(`${this.id} .send`);
 
-  var scroll = function () {
-    j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-  };
+    if (this.mobile) {
+      this.setupMobileHandlers(input);
+    } else {
+      this.setupDesktopHandlers(input);
+    }
+  }
 
-  if (Config.device.mobile) {
-    j(id + ' .send').focus(function () {
-      //this.setSelectionRange(0, 9999);
-      //j(this).val('');
-      j(id).height('82%');
-      scroll();
+  setupMobileHandlers(input) {
+    input.focus(() => {
+      j(this.id).height('82%');
+      this.scroll();
     });
 
-    j(id + ' .send').blur(function () {
-      /*if (j(this).val().length) {
-				ws.send(j(this).val());
-				j(this).val('');
-			}
-			else ws.send('\r\n');*/
-      win.maximize();
-      scroll();
+    input.blur(() => {
+      this.win.maximize();
+      this.scroll();
     });
 
-    document.addEventListener(
-      'touchstart',
-      function (e) {
-        scroll();
-        //var touch = e.touches[0];
-        //alert(touch.pageX + " - " + touch.pageY);
-      },
-      false,
-    );
+    document.addEventListener('touchstart', () => this.scroll(), false);
 
-    j(id + ' .send').keydown(function (e) {
-      if (e.which == 13) {
-        /* enter */
-
+    input.keydown((e) => {
+      if (e.which === 13) {
         e.preventDefault();
+        const value = input.val();
 
-        if (j(this).val().length) {
-          ws.send(j(this).val());
-          j(this).val('');
-        } else ws.send('\r\n');
+        if (value.length) {
+          this.ws.send(value);
+          input.val('');
+        } else {
+          this.ws.send('\r\n');
+        }
       }
     });
 
-    j(id + ' .send').focus();
-    setInterval(scroll, 2000);
-  } else {
-    j(id + ' .send').focus(function () {
+    input.focus();
+    setInterval(() => this.scroll(), 2000);
+  }
+
+  setupDesktopHandlers(input) {
+    input.focus(function () {
       if (!j(this).is(':focus')) j(this).select();
     });
 
-    j(id + ' .send')
-      .focus()
-      .keydown(function (e) {
-        if (e.which == 13) {
-          /* enter */
+    input.focus().keydown((e) => {
+      if (e.which === 13) {
+        e.preventDefault();
+        const value = input.val();
 
-          e.preventDefault();
+        if (value.length) {
+          this.ws.send(value);
+          this.cmds.push(value);
+          this.cmdi++;
 
-          if (j(this).val().length) {
-            var v = j(this).val();
-            ws.send(v);
-            cmds.push(v);
-            cmdi++;
-            //this.setSelectionRange(0, 9999);
-            if (keepcom) this.select();
-            else j(this).val('');
-          } else ws.send('\r\n');
-        } else if (e.keyCode == 38) {
-          /* arrow up */
-
-          e.preventDefault();
-
-          if (cmdi) j(this).val(cmds[--cmdi]);
-
-          this.select();
-          //this.setSelectionRange(0, 9999);
-        } else if (e.keyCode == 40) {
-          /* arrow down */
-
-          e.preventDefault();
-
-          if (cmdi < cmds.length - 1) j(this).val(cmds[++cmdi]);
-
-          this.select();
-          //this.setSelectionRange(0, 9999);
+          if (this.keepcom) {
+            input[0].select();
+          } else {
+            input.val('');
+          }
+        } else {
+          this.ws.send('\r\n');
         }
-      });
+      } else if (e.keyCode === 38) {
+        e.preventDefault();
+        if (this.cmdi) {
+          input.val(this.cmds[--this.cmdi]);
+        }
+        input[0].select();
+      } else if (e.keyCode === 40) {
+        e.preventDefault();
+        if (this.cmdi < this.cmds.length - 1) {
+          input.val(this.cmds[++this.cmdi]);
+        }
+        input[0].select();
+      }
+    });
   }
 
-  Event.listen('internal_colorize', new Colorize().process);
+  setupColorization() {
+    Event.listen('internal_colorize', new Colorize().process);
+  }
 
-  Event.listen('after_display', function (m) {
-    try {
-      sesslog += m.replace(/<br>/gi, '\n').replace(/<.+?>/gm, '');
-    } catch (ex) {
-      log('ScrollView.after_display ', ex);
-    }
-    return m;
-  });
-
-  var add = function (A) {
-    var my = j(id + ' .out');
-
-    if (my[0].scrollHeight > o.scrollback) {
-      j(id + ' .out')
-        .children()
-        .slice(0, 100)
-        .remove();
-
-      var t = j(id + ' .out').html(),
-        i = t.indexOf('<span');
-
-      j(id + ' .out').html(t.slice(i));
-    }
-
-    my.append('<span>' + A + '</span>');
-    scroll();
-
-    if (j(id + ' .freeze').length)
-      j(id + ' .freeze').append('<span>' + A + '</span>');
-
-    Event.fire('scrollview_add', A, self);
-  };
-
-  var scroll = function () {
-    j(id + ' .out').scrollTop(j(id + ' .out').prop('scrollHeight'));
-  };
-
-  var echo = function (msg) {
-    if (!msg.length) return;
-
-    if (o.local && o.echo) {
-      msg = msg.replace(/>/g, '&gt;');
-      msg = msg.replace(/</g, '&lt;');
-
-      add(
-        '<span style="font-size: 12px; color: gold; opacity: 0.6">' +
-          msg +
-          '</span><br>',
-      );
-    }
-  };
-
-  var title = function (t) {
-    win.title(t);
-    document.title = t || Config.name;
-  };
-
-  title(Config.name || Config.host + ':' + Config.port);
-
-  var echoOff = function () {
-    o.echo = 0;
-  };
-  var echoOn = function () {
-    o.echo = 1;
-  };
-
-  var self = {
-    add: add,
-    echo: echo,
-    echoOff: echoOff,
-    echoOn: echoOn,
-    title: title,
-    id: id,
-    scroll: scroll,
-    win: win,
-  };
-
-  var ws = new Socket({
-    host: Config.host,
-    port: Config.port,
-    proxy: Config.proxy,
-    out: self,
-  });
-
-  if (window.user && user.id) {
-    Config.MacroPane = new MacroPane({
-      socket: ws,
+  setupLogging() {
+    Event.listen('after_display', (message) => {
+      try {
+        this.sesslog += message.replace(/<br>/gi, '\n').replace(/<.+?>/gm, '');
+      } catch (error) {
+        log('ScrollView.after_display ', error);
+      }
+      return message;
     });
+  }
+
+  add(content) {
+    const output = j(`${this.id} .out`);
+    const freezePane = j(`${this.id} .freeze`);
+
+    if (output[0].scrollHeight > this.options.scrollback) {
+      output.children().slice(0, 100).remove();
+      const html = output.html();
+      const firstSpan = html.indexOf('<span');
+      output.html(html.slice(firstSpan));
+    }
+
+    output.append(`<span>${content}</span>`);
+    this.scroll();
+
+    if (freezePane.length) {
+      freezePane.append(`<span>${content}</span>`);
+    }
+
+    Event.fire('scrollview_add', content, this);
+  }
+
+  scroll() {
+    j(`${this.id} .out`).scrollTop(j(`${this.id} .out`).prop('scrollHeight'));
+  }
+
+  echo(message) {
+    if (!message.length) return;
+
+    if (this.options.local && this.options.echo) {
+      const escapedMessage = message
+        .replace(/>/g, '&gt;')
+        .replace(/</g, '&lt;');
+
+      // eslint-disable-next-line prettier/prettier
+      this.add(`<span style="font-size: 12px; color: gold; opacity: 0.6">${escapedMessage}</span><br>`);
+    }
+  }
+
+  title(text) {
+    this.win.title(text);
+    document.title = text || Config.name;
+  }
+
+  initializeSocket() {
+    this.title(Config.name || `${Config.host}:${Config.port}`);
+
+    this.ws = new Socket({
+      host: Config.host,
+      port: Config.port,
+      proxy: Config.proxy,
+      out: this,
+    });
+
+    if (window.user?.id) {
+      this.setupMacrosAndTriggers();
+    }
+
+    Config.ScrollView = this;
+    Event.fire('scrollview_ready', null, this);
+  }
+
+  setupMacrosAndTriggers() {
+    Config.MacroPane = new MacroPane({ socket: this.ws });
+    Config.TriggerHappy = new TriggerHappy({ socket: this.ws });
 
     if (!Config.nomacros) {
       Event.listen('before_send', Config.MacroPane.sub);
-      self.echo('Activating macros.');
+      this.echo('Activating macros.');
     }
-
-    Config.TriggerHappy = new TriggerHappy({
-      socket: ws,
-    });
 
     if (!Config.notriggers) {
       Event.listen('after_display', Config.TriggerHappy.respond);
-      self.echo('Activating triggers.');
+      this.echo('Activating triggers.');
     }
   }
 
-  Config.ScrollView = self;
-  Event.fire('scrollview_ready', null, self);
+  echoOff = () => (this.options.echo = false);
+  echoOn = () => (this.options.echo = true);
 
-  return self;
-};
+  // createInterface() {
+  //   return {
+  //     add: (content) => this.add(content),
+  //     echo: (message) => this.echo(message),
+  //     echoOff: () => (this.options.echo = false),
+  //     echoOn: () => (this.options.echo = true),
+  //     title: (text) => this.title(text),
+  //     id: this.id,
+  //     scroll: () => this.scroll(),
+  //     win: this.win,
+  //   };
+  // }
+}

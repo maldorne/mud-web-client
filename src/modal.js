@@ -1,19 +1,43 @@
-var Modal = function (o) {
-  log('Modal.init');
+import jQuery from 'jquery';
+import { Modal as BootstrapModal } from 'bootstrap';
+import { Config } from './config.js';
+import { Event } from './event.js';
+import { log } from './utils.js';
 
-  o.backdrop = o.backdrop || 0;
+const j = jQuery;
 
-  var close = function () {
-    console.log('Modal close');
+export class Modal {
+  constructor(options) {
+    log('Modal.init');
+    this.options = options;
+    this.options.backdrop = options.backdrop || false;
+    this.modalInstance = null;
+    this.init();
+  }
 
-    if (o.abort) Config.Socket.write(o.abort);
+  close() {
+    log('Modal.close');
 
-    j('.modal .mo-dismiss').off();
-    j('.modal').modal('hide');
-  };
+    if (this.options.abort) {
+      Config.Socket.write(this.options.abort);
+    }
 
-  var init = function () {
-    if (o.close && o.close == 1) return j('.modal').modal('hide');
+    if (this.modalInstance) {
+      this.modalInstance.hide();
+    }
+  }
+
+  init() {
+    const o = this.options;
+
+    if (o.close && o.close === 1) {
+      const existingModal = document.querySelector('.modal');
+      if (existingModal) {
+        const modal = BootstrapModal.getInstance(existingModal);
+        if (modal) modal.hide();
+      }
+      return;
+    }
 
     if (o.mxp) {
       o.replace = 1;
@@ -22,12 +46,10 @@ var Modal = function (o) {
     }
 
     if (o.text) o.text = Config.mxp.prep(o.text);
-
     if (o.error) o.error = Config.mxp.prep(o.error);
-
     if (o.info) o.info = Config.mxp.prep(o.info);
 
-    if (exists(o.monospace) && !o.monospace) {
+    if (o.monospace !== undefined && !o.monospace) {
       o.html = o.text;
       delete o.text;
       log('monospace option is false');
@@ -40,184 +62,182 @@ var Modal = function (o) {
         j('.modal h3').html(o.title);
         j('.modal .modal-body').html(o.text || o.html);
 
-        buttons();
-        links();
-
+        this.setupButtons();
+        this.setupLinks();
         return;
       }
     }
 
-    j('.modal').modal('hide');
+    // Hide any existing modals
+    const existingModal = document.querySelector('.modal');
+    if (existingModal) {
+      const modal = BootstrapModal.getInstance(existingModal);
+      if (modal) modal.hide();
+    }
 
-    j('body').append(
-      '\
-			<div class="modal ' +
-        (o['class'] || '') +
-        ' modal-plain fade"><div class="modal-dialog"><div class="modal-content">\
-				<div class="modal-header">\
-					<button type="button" class="close mo-dismiss">×</button>\
-					<h3>' +
-        (o.title || '') +
-        '</h3>\
-				</div>\
-				<div class="modal-body">\
-				' +
-        (o.info ? '<div class="alert alert-info">' + o.info + '</div>' : '') +
-        '\
-				' +
-        (o.error ? '<div class="alert">' + o.error + '</div>' : '') +
-        '\
-				' +
-        (o.text
-          ? '<div class="modal-text-content">' + o.text + '</div>'
-          : o.html) +
-        '\
-				<br><br></div>\
-				<div class="modal-footer">\
-					<button class="btn btn-primary kbutton dismiss mo-dismiss">OK</button>\
-				</div>\
-			</div></div></div>\
-		',
-    );
+    const modalTemplate = `
+      <div class="modal ${o['class'] || ''} modal-plain fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">${o.title || ''}</h5>
+              <button type="button" class="btn-close mo-dismiss" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              ${o.info ? `<div class="alert alert-info">${o.info}</div>` : ''}
+              ${o.error ? `<div class="alert alert-danger">${o.error}</div>` : ''}
+              ${o.text ? `<div class="modal-text-content">${o.text}</div>` : o.html || ''}
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary kbutton dismiss mo-dismiss" data-bs-dismiss="modal">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
 
-    buttons();
-    links();
+    j('body').append(modalTemplate);
 
-    if (o.closeText || o.cancelText)
+    this.setupButtons();
+    this.setupLinks();
+
+    if (o.closeText || o.cancelText) {
       j('.modal .dismiss').html(o.closeText || o.cancelText);
+    }
 
-    if (o.closeable == false || o.closeable == 0) j('.modal .close').remove();
+    if (o.closeable === false || o.closeable === 0) {
+      j('.modal .btn-close').remove();
+    }
 
-    j('.modal .mo-dismiss').on('click', close);
+    // Initialize Bootstrap 5 modal
+    const modalEl = document.querySelector('.modal');
+    this.modalInstance = new BootstrapModal(modalEl, {
+      backdrop: this.options.backdrop ? true : 'static',
+      keyboard: true,
+    });
+
+    j('.modal .mo-dismiss').on('click', () => this.close());
 
     if (o.css) {
-      if (o.css.width) o.css['margin-left'] = -(o.css.width / 2);
+      if (o.css.width) {
+        o.css['margin-left'] = -(o.css.width / 2);
+      }
       j('.modal').css(o.css);
-      //j('.modal-body').height(j('.modal').height() - j('.modal-header').height() - j('.modal-footer').height() - 4);
     }
 
-    j('.modal').modal(o);
-  };
+    this.modalInstance.show();
+  }
 
-  var buttons = function () {
+  setupButtons() {
+    const o = this.options;
     if (!o.buttons) return;
 
-    j('.modal-footer .btn').remove();
+    j('.modal-footer .btn').not('.dismiss').remove();
 
-    if (o.buttons.pop) {
-      for (var i = 0; i < o.buttons.length; i++) {
-        var b = o.buttons[i];
+    if (Array.isArray(o.buttons)) {
+      o.buttons.forEach((button, index) => {
+        const buttonEl = `
+          <button class="btn btn-secondary kbutton custom-${index}"
+            ${button.keep ? '' : 'data-bs-dismiss="modal"'}>
+            ${button.text}
+          </button>
+        `;
+        j('.modal-footer').append(buttonEl);
 
-        j('.modal-footer').append(
-          '<button class="btn btn-default kbutton custom-' +
-            i +
-            '" data-dismiss="' +
-            (b.keep ? '' : 'modal') +
-            '">' +
-            b.text +
-            '</button>',
-        );
+        if (button.send) {
+          j('.modal-footer .custom-' + index).click(() => {
+            Config.Socket.write(button.send);
+          });
+        }
 
-        if (b.send)
-          j('.modal-footer .custom-' + i).click(
-            (function (cmd) {
-              return function () {
-                Config.Socket.write(cmd);
-              };
-            })(b.send),
-          );
+        if (button.click) {
+          j('.modal-footer .custom-' + index).click(button.click);
+        }
 
-        if (b.click) j('.modal-footer .custom-' + i).click(b.click);
-
-        if (b.css) j('.modal-footer .custom-' + i).css(b.css);
-      }
+        if (button.css) {
+          j('.modal-footer .custom-' + index).css(button.css);
+        }
+      });
     } else {
-      var n = 0;
-      for (var i in o.buttons) {
-        j('.modal-footer').append(
-          '<button class="btn btn-default kbutton custom-' +
-            n +
-            '" data-dismiss="modal">' +
-            i +
-            '</button>',
-        );
-        j('.modal-footer .custom-' + n).click(
-          (function (cmd) {
-            return function () {
-              Config.Socket.write(cmd);
-            };
-          })(o.buttons[i]),
-        );
-        n++;
-      }
+      Object.entries(o.buttons).forEach(([text, cmd], index) => {
+        const buttonEl = `
+          <button class="btn btn-secondary kbutton custom-${index}" 
+            data-bs-dismiss="modal">
+            ${text}
+          </button>
+        `;
+        j('.modal-footer').append(buttonEl);
+        j('.modal-footer .custom-' + index).click(() => {
+          Config.Socket.write(cmd);
+        });
+      });
     }
-  };
+  }
 
-  var links = function () {
+  setupLinks() {
+    const o = this.options;
     if (!o.links) return;
 
-    j('.modal-footer').remove('.modal-links');
-    j('.modal-footer').prepend(
-      '<div class="modal-links left" style="position: relative; z-index: 1; font-size: 11px; opacity: 0.7"></div>',
-    );
+    j('.modal-footer .modal-links').remove();
+    j('.modal-footer').prepend(`
+      <div class="modal-links float-start" 
+           style="position: relative; z-index: 1; font-size: 11px; opacity: 0.7">
+      </div>
+    `);
 
-    if (o.links.pop)
-      for (var i = 0; i < o.links.length; i++) {
-        j('.modal-links').append(
-          '<a class="link-' +
-            i +
-            ' left" data-dismiss="' +
-            (o.links[i].keep ? '' : 'modal') +
-            '">' +
-            o.links[i].text +
-            '</a><br>',
-        );
-        j('.modal-links .link-' + i).click(o.links[i].click);
-        if (o.links[i].css) j('.modal-links .link-' + i).css(o.links[i].css);
-      }
-    else {
-      var n = 0;
-      for (var i in o.links) {
-        j('.modal-links').append(
-          '<a class="link-' + n + '" data-dismiss="modal">' + i + '</a><br>',
-        );
-        j('.modal-links .link-' + n).click(
-          (function (cmd) {
-            return function () {
-              Config.Socket.write(cmd);
-            };
-          })(o.links[i]),
-        );
-        n++;
-      }
+    if (Array.isArray(o.links)) {
+      o.links.forEach((link, index) => {
+        j('.modal-links').append(`
+          <a class="link-${index}" 
+             ${link.keep ? '' : 'data-bs-dismiss="modal"'}>
+            ${link.text}
+          </a><br>
+        `);
+        j('.modal-links .link-' + index).click(link.click);
+        if (link.css) j('.modal-links .link-' + index).css(link.css);
+      });
+    } else {
+      Object.entries(o.links).forEach(([text, cmd], index) => {
+        j('.modal-links').append(`
+          <a class="link-${index}" data-bs-dismiss="modal">
+            ${text}
+          </a><br>
+        `);
+        j('.modal-links .link-' + index).click(() => {
+          Config.Socket.write(cmd);
+        });
+      });
     }
-  };
+  }
+}
 
-  init();
-};
-
-j('body').on('shown.bs.modal', function () {
-  j('.modal .modal-body').niceScroll({ cursorborder: 'none', cursorwidth: 7 });
+// Bootstrap 5 Event handlers
+document.addEventListener('shown.bs.modal', () => {
+  j('.modal .modal-body').niceScroll({
+    cursorborder: 'none',
+    cursorwidth: 7,
+  });
 });
 
-j('body').on('hide.bs.modal', function () {
-  j('.modal .modal-body').niceScroll('destroy');
+document.addEventListener('hide.bs.modal', () => {
+  j('.modal .modal-body').getNiceScroll().remove();
   j('.modal a, .modal button').off('click');
-  j('.modal input, .modal textarea').off('keywdown');
+  j('.modal input, .modal textarea').off('keydown');
   j('.modal, .modal-backdrop').remove();
 });
 
-Event.listen('gmcp', function (d) {
-  if (!d || !d.start || !d.start('Modal ')) return d;
+// GMCP event listener
+Event.listen('gmcp', (data) => {
+  if (!data?.startsWith('Modal ')) return data;
 
   log('Modal: gmcp trigger');
 
   try {
-    var o = JSON.parse(d.match(/^[^ ]+ (.*)/)[1]);
-    new Modal(o);
-  } catch (ex) {
-    log(ex);
+    const options = JSON.parse(data.match(/^[^ ]+ (.*)/)[1]);
+    new Modal(options);
+  } catch (error) {
+    log('Modal parse error:', error);
   }
 
-  return d;
+  return data;
 });

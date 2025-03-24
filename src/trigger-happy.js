@@ -1,106 +1,134 @@
-/* Module for handling triggers on a socket. */
+import { Config } from './config.js';
+import { Event } from './event.js';
+import { log, param } from './utils.js';
 
-var TriggerHappy = function (o) {
-  var host = Config.host;
-  var port = Config.port;
-  var G = user.pref.sitelist,
-    P = user.pref.profiles,
-    g,
-    p,
-    gTriggers = [],
-    pTriggers = [];
-  var triggers;
+export class TriggerHappy {
+  constructor(options) {
+    this.host = Config.host;
+    this.port = Config.port;
+    this.triggers = [];
+    this.gTriggers = [];
+    this.pTriggers = [];
 
-  var init = function () {
-    if (Config.onfirst)
-      Event.listen('before_process', function (d) {
-        if (Config.onfirst) {
-          var a = Config.onfirst.split(';');
+    const { sitelist: games, profiles } = window.user.pref;
 
-          if (a.length && a.length > 1 && d.has(a[0])) {
-            for (var i = 1; i < a.length; i++) {
-              (function (a, i) {
-                return setTimeout(function () {
-                  Config.socket.write(a, i + '\r\n');
-                  Config.socket.echo('\n');
-                }, i * 600);
-              })(a[i], i);
-            }
+    this.init(games, profiles);
+  }
 
-            log('sending onfirst text');
-            delete Config.onfirst;
-          }
-        }
+  init(games, profiles) {
+    this.setupFirstTimeEvents();
 
-        return d;
-      });
-
-    if (Config.notriggers) return log('Triggers disabled by official code.');
-
-    for (g in G) {
-      if (G[g].host == host) {
-        gTriggers = G[g].triggers;
-        break;
-      }
+    if (Config.notriggers) {
+      log('Triggers disabled by official code.');
+      return;
     }
 
-    if (P && P[param('profile')]) pTriggers = P[param('profile')].triggers;
+    this.loadGameTriggers(games);
+    this.loadProfileTriggers(profiles);
+    this.compileTriggers();
+    this.notifyTriggerCount();
+  }
 
-    triggers = [];
+  setupFirstTimeEvents() {
+    if (!Config.onfirst) return;
 
-    if (gTriggers)
-      for (var n = 0; n < gTriggers.length; n++)
-        if (gTriggers[n][2]) triggers.push(gTriggers[n]);
+    Event.listen('before_process', (data) => {
+      if (!Config.onfirst) return data;
 
-    if (pTriggers)
-      for (var n = 0; n < pTriggers.length; n++)
-        if (pTriggers[n][2]) triggers.push(pTriggers[n]);
+      const commands = Config.onfirst.split(';');
 
-    for (var t = 0; t < triggers.length; t++) {
+      if (commands.length > 1 && data.includes(commands[0])) {
+        commands.slice(1).forEach((command, index) => {
+          setTimeout(
+            () => {
+              Config.socket.write(`${command}\r\n`);
+              Config.socket.echo('\n');
+            },
+            (index + 1) * 600,
+          );
+        });
+
+        log('sending onfirst text');
+        delete Config.onfirst;
+      }
+
+      return data;
+    });
+  }
+
+  loadGameTriggers(games) {
+    const game = Object.values(games).find((g) => g.host === this.host);
+
+    if (game) {
+      this.gTriggers = game.triggers || [];
+    }
+  }
+
+  loadProfileTriggers(profiles) {
+    const profileName = param('profile');
+    if (profiles?.[profileName]) {
+      this.pTriggers = profiles[profileName].triggers || [];
+    }
+  }
+
+  compileTriggers() {
+    this.triggers = [
+      ...this.gTriggers.filter((trigger) => trigger[2]),
+      ...this.pTriggers.filter((trigger) => trigger[2]),
+    ];
+
+    this.triggers.forEach((trigger) => {
       try {
-        triggers[t][3] = new RegExp(
-          triggers[t][0].replace(/\$[0-9]/g, '([A-Za-z0-9-\'"]+)'),
+        // Add compiled regex as fourth element of trigger array
+        trigger[3] = new RegExp(
+          trigger[0].replace(/\$[0-9]/g, '([A-Za-z0-9-\'"]+)'),
           'g',
         );
-      } catch (ex) {
-        log(ex);
+      } catch (error) {
+        log(`Error compiling trigger regex: ${error}`);
       }
-    }
+    });
+  }
 
-    Config.socket.echo(
-      'Loaded ' +
-        triggers.length +
-        '/' +
-        (gTriggers.length + pTriggers.length) +
-        ' triggers.',
-    );
-  };
+  notifyTriggerCount() {
+    const totalAvailable = this.gTriggers.length + this.pTriggers.length;
+    const activeCount = this.triggers.length;
 
-  var respond = function (msg) {
-    if (Config.notriggers) return msg;
+    Config.socket.echo(`Loaded ${activeCount}/${totalAvailable} triggers.`);
+  }
 
-    for (var t = 0; t < triggers.length; t++) {
-      var res = triggers[t][3].exec(msg);
+  respond(message) {
+    if (Config.notriggers) return message;
 
-      if (!res || !res.length) continue;
+    this.triggers.forEach(([pattern, command, enabled, regex]) => {
+      const match = regex.exec(message);
 
-      var cmd = triggers[t][1];
+      if (!match?.length) return;
 
-      if (res.length > 1) {
-        for (var n = 1; n < res.length; n++)
-          cmd = cmd.replace('$' + n, res[n], 'g');
+      let processedCommand = command;
+
+      if (match.length > 1) {
+        // Replace wildcards with captured groups
+        match.slice(1).forEach((capture, index) => {
+          processedCommand = processedCommand.replace(
+            `$${index + 1}`,
+            capture,
+            'g',
+          );
+        });
       }
 
-      Config.socket.send(cmd);
-    }
+      Config.socket.send(processedCommand);
+    });
 
-    return msg;
-  };
+    return message;
+  }
 
-  init();
-
-  return {
-    init: init,
-    respond: respond,
-  };
-};
+  // static create(options) {
+  //   const triggerHandler = new TriggerHappy(options);
+  //   return {
+  //     init: (games, profiles) => triggerHandler.init(games, profiles),
+  //     respond: (message) => triggerHandler.respond(message)
+  //   };
+  // }
+}

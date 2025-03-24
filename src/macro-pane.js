@@ -1,65 +1,79 @@
-/* Module for handling macros on a Socket. Also draws a panel with quick buttons. */
+import jQuery from 'jquery';
+import { Config } from './config.js';
+import { Window } from './window.js';
+import { log, stringify, param } from './utils.js';
 
-var MacroPane = function (o) {
-  if (Config.nomacros) return;
+const j = jQuery;
 
-  var id = '#macro-pane';
-  var socket = o.socket;
-  var host = Config.host;
-  var port = Config.port;
-  var G = user.pref.sitelist,
-    P = user.pref.profiles,
-    g,
-    p,
-    gMacros,
-    pMacros;
-  var buttons;
-  var vars;
-  var first = 1;
+export class MacroPane {
+  constructor(options) {
+    if (Config.nomacros) return;
 
-  var init = function () {
-    var fav = false;
-    buttons = [];
+    this.id = '#macro-pane';
+    this.socket = options.socket;
+    this.host = Config.host;
+    this.port = Config.port;
+    this.buttons = [];
+    this.first = true;
 
-    for (g in G) {
-      if (G[g].host == host) {
-        gMacros = G[g].macros;
+    const { sitelist: G, profiles: P } = window.user.pref;
+    this.gMacros = null;
+    this.pMacros = null;
+
+    // Find game macros
+    for (const game of Object.values(G)) {
+      if (game.host === this.host) {
+        this.gMacros = game.macros;
         break;
       }
     }
 
-    if (P && P[param('profile')]) pMacros = P[param('profile')].macros;
+    // Find profile macros
+    if (P && P[param('profile')]) {
+      this.pMacros = P[param('profile')].macros;
+    }
 
-    if (gMacros)
-      for (var n = 0; n < gMacros.length; n++) {
-        buttons.push(gMacros[n]);
-        if (gMacros[n][3]) fav = true;
-      }
+    this.init();
+  }
 
-    if (pMacros)
-      for (var n = 0; n < pMacros.length; n++) {
-        buttons.push(pMacros[n]);
-        if (pMacros[n][3]) fav = true;
-      }
+  init() {
+    let hasFavorites = false;
+    this.buttons = [];
 
-    socket.echo('Loaded ' + buttons.length + ' macros.');
+    if (this.gMacros) {
+      this.gMacros.forEach((macro) => {
+        this.buttons.push(macro);
+        if (macro[3]) hasFavorites = true;
+      });
+    }
 
-    if (fav && !o.noquickbuttons && !Config.nocenter) pane();
+    if (this.pMacros) {
+      this.pMacros.forEach((macro) => {
+        this.buttons.push(macro);
+        if (macro[3]) hasFavorites = true;
+      });
+    }
 
-    first = 0;
-  };
+    this.socket.echo(`Loaded ${this.buttons.length} macros.`);
 
-  var pane = function () {
+    if (hasFavorites && !this.options?.noquickbuttons && !Config.nocenter) {
+      this.createPane();
+    }
+
+    this.first = false;
+  }
+
+  createPane() {
     if (Config.device.mobile) return;
 
-    j(id).remove();
+    j(this.id).remove();
 
-    if (!buttons.length) return;
+    if (!this.buttons.length) return;
 
-    var win = new Window({
-      id: id,
+    const win = new Window({
+      id: this.id,
       title: 'Quick Buttons',
-      closeable: 1,
+      closeable: true,
       class: 'nofade',
       css: {
         width: 200,
@@ -70,88 +84,85 @@ var MacroPane = function (o) {
       },
     });
 
-    j(id + ' .content').append('<ul class="macro-btns"></ul>');
+    j(`${this.id} .content`).append('<ul class="macro-btns"></ul>');
 
-    for (var b = 0; b < buttons.length; b++)
-      if (buttons[b][2] && buttons[b][3] && !buttons[b][1].has('$'))
-        j(id + ' .content .macro-btns').append(
-          '<li class="kbutton macro-btn tip" data="' +
-            buttons[b][1] +
-            '" title="' +
-            buttons[b][1] +
-            '">' +
-            buttons[b][0] +
-            '</li>',
-        );
+    this.buttons.forEach(([name, command, enabled, favorite]) => {
+      if (enabled && favorite && !command.includes('$')) {
+        j(`${this.id} .content .macro-btns`).append(`
+          <li class="kbutton macro-btn tip" 
+              data="${command}" 
+              title="${command}">
+            ${name}
+          </li>
+        `);
+      }
+    });
 
-    if (first) {
-      j(id + ' .content .macro-btns').sortable();
-      j('body').on('click', '.macro-btn', function () {
-        socket.send(j(this).attr('data'));
+    if (this.first) {
+      j(`${this.id} .content .macro-btns`).sortable();
+      j('body').on('click', '.macro-btn', (e) => {
+        this.socket.send(j(e.currentTarget).attr('data'));
       });
     }
-  };
+  }
 
-  var vars = function (msg) {
-    for (var i = 0; i < buttons.length; i++) {
-      if (buttons[i][0][0] == '$' && buttons[i][2]) {
-        var re = new RegExp('\\' + buttons[i][0], 'g');
-        log(re);
-        msg = msg.replace(re, buttons[i][1]);
-        log('MacroPane: var replacement: ' + stringify(buttons[i]));
-        log(msg);
+  replaceVariables(message) {
+    return this.buttons.reduce((msg, [name, value, enabled]) => {
+      if (name[0] === '$' && enabled) {
+        const regex = new RegExp('\\' + name, 'g');
+        log(regex);
+        const replacedMsg = msg.replace(regex, value);
+        log(
+          `MacroPane: var replacement: ${stringify([name, value, enabled])}`,
+        );
+        log(replacedMsg);
+        return replacedMsg;
       }
+      return msg;
+    }, message);
+  }
+
+  processCommand(message) {
+    if (Config.nomacros) return message;
+
+    log(`MacroPane.sub: ${this.buttons.length}`);
+
+    for (const [command, substitution, enabled] of this.buttons) {
+      if (!enabled || !message.includes(command)) continue;
+
+      if (!substitution.includes('$')) {
+        const regex = new RegExp('^' + command, 'g');
+        return message.replace(regex, substitution);
+      }
+
+      if (substitution.includes('$*')) {
+        const [, ...args] = message.split(' ');
+        return substitution.replace('$*', args.join(' '));
+      }
+
+      if (!substitution.includes(' ')) continue;
+
+      const messageArgs = message.split(' ');
+      if (messageArgs[0] !== command) continue;
+
+      let result = substitution;
+      messageArgs.slice(1).forEach((arg, index) => {
+        result = result.replace(`$${index + 1}`, arg, 'g');
+        console.log(result);
+      });
+
+      return this.replaceVariables(result);
     }
 
-    return msg;
-  };
+    return message;
+  }
 
-  var sub = function (msg) {
-    if (Config.nomacros) return msg;
-
-    log('MacroPane.sub: ' + buttons.length);
-
-    for (var b = 0; b < buttons.length; b++) {
-      var cmd = buttons[b][0],
-        sub = buttons[b][1];
-
-      if (buttons[b][2] && msg.has(cmd)) {
-        if (!sub.has('$')) {
-          var re = new RegExp('^' + cmd, 'g');
-          msg = msg.replace(re, sub);
-          return msg;
-        }
-
-        if (sub.has('$*')) {
-          var arg = msg.split(' ');
-          arg.shift();
-          msg = sub.replace('$*', arg.join(' '));
-          return msg;
-        }
-
-        if (!sub.has(' ')) continue;
-
-        var arg = msg.split(' ');
-
-        if (arg[0] != cmd) continue;
-
-        for (var i = 1; i < arg.length; i++) {
-          sub = sub.replace('$' + i, arg[i], 'g');
-          console.log(sub);
-        }
-
-        return vars(sub);
-      }
-    }
-
-    return msg;
-  };
-
-  init();
-
-  return {
-    init: init,
-    pane: pane,
-    sub: sub,
-  };
-};
+  // static create(options) {
+  //   const pane = new MacroPane(options);
+  //   return {
+  //     init: () => pane.init(),
+  //     pane: () => pane.createPane(),
+  //     sub: (msg) => pane.processCommand(msg)
+  //   };
+  // }
+}

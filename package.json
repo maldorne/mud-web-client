@@ -1,6 +1,6 @@
 {
   "name": "mud-web-client",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Web client through websockets",
   "type": "module",
   "keywords": [
@@ -17,7 +17,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx eslint .",
-    "lint:fix": "npx eslint . --fix"
+    "lint:fix": "npx eslint . --fix",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -31,12 +34,28 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.26.10",
     "@eslint/js": "^9.23.0",
+    "@vitejs/plugin-legacy": "^6.0.2",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-jsonc": "^2.19.1",
     "eslint-plugin-prettier": "^5.2.4",
     "globals": "^16.0.0",
     "jsonc-eslint-parser": "^2.4.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "vite": "^6.2.3"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-regular-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@popperjs/core": "^2.11.8",
+    "@rollup/plugin-inject": "^5.0.5",
+    "@types/jquery": "^3.5.32",
+    "@types/jqueryui": "^1.12.24",
+    "bootstrap": "^5.3.3",
+    "file-saver": "^2.0.5",
+    "jquery": "^3.7.1",
+    "jquery-ui-dist": "^1.13.3",
+    "jquery.nicescroll": "^3.7.6"
   }
 }

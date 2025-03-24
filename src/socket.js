@@ -1,24 +1,62 @@
-var Socket = function (o) {
-  var self = this,
-    ws = {},
-    out = o.out || Config.ScrollView,
-    connected = 0;
-  var proxy = Config.proxy;
-  o.type = o.type || 'telnet';
-  var host = o.host,
-    port = o.port;
-  var buff = '';
-  var z_lib, z_stream, z_raw, utf8;
-  var colorize = new Colorize();
-  var cmds = [],
-    cmdi = 0,
-    echo = 1;
-  var keepcom =
-    Config.getSetting('keepcom') == null || Config.getSetting('keepcom') == 1;
+import { Config } from './config.js';
+import { Event } from './event.js';
+import { Colorize } from './colorize.js';
+import { log, stringify } from './utils.js';
 
-  if (proxy.has('maldorne')) delete o.proxy;
+// import {
+//   Base64Reader,
+//   Utf8Translator,
+//   TextReader,
+//   CharReader,
+// } from './lib/base64.js';
+import {
+  Base64Reader,
+  Utf8Translator,
+  TextReader,
+  Inflator,
+  CharReader,
+} from './lib/inflate.js';
+// import { ZLIB } from './lib/zlib-inflate.js';
 
-  var prot = {
+export class Socket {
+  constructor(options) {
+    this.options = {
+      type: 'telnet',
+      ...options,
+    };
+
+    this.ws = {};
+    this.out = options.out || Config.ScrollView;
+    this.connected = false;
+    this.proxy = Config.proxy;
+    this.host = options.host;
+    this.port = options.port;
+    this.buffer = '';
+    this.zlibState = {
+      lib: null,
+      stream: null,
+      raw: null,
+    };
+    this.utf8 = false;
+    this.colorize = new Colorize();
+    this.commands = [];
+    this.commandIndex = 0;
+    this.echo = true;
+    this.keepCommand = Config.getSetting('keepcom') ?? true;
+
+    if (this.proxy.includes('maldorne')) {
+      delete this.options.proxy;
+    }
+
+    // Initialize socket
+    this.initializeSocket();
+
+    if (this.options.type === 'telnet') {
+      Config.socket = Config.Socket = this;
+    }
+  }
+
+  static PROTOCOL = {
     IS: 0,
     REQUEST: 1,
     ACCEPTED: 2,
@@ -40,283 +78,293 @@ var Socket = function (o) {
     IAC: 255,
   };
 
-  var onOpen = function (evt) {
+  handleOpen = (event) => {
     log('Socket: connected');
+    this.connected = true;
 
-    connected = 1;
-
-    if (!o.proxy && o.type == 'telnet') {
-      ws.send(
+    if (!this.options.proxy && this.options.type === 'telnet') {
+      this.ws.send(
         stringify({
-          host: o.host,
-          port: o.port,
+          host: this.options.host,
+          port: this.options.port,
           utf8: 1,
           mxp: 1,
           connect: 1,
           mccp: Config.device.mobile ? 0 : 1,
           debug: Config.debug,
-          client: o.client,
-          ttype: o.ttype,
-          name: window.user ? user.username : 'Guest',
+          client: this.options.client,
+          ttype: this.options.ttype,
+          name: window.user?.username || 'Guest',
         }),
       );
     }
 
-    if (o.onOpen) o.onOpen(evt);
+    if (this.options.onOpen) {
+      this.options.onOpen(event);
+    }
 
-    if (o.type == 'telnet') Event.fire('socket_open', self);
+    if (this.options.type === 'telnet') {
+      Event.fire('socket_open', this);
+    }
 
-    Event.fire(o.type + '_open', self);
-    /*
-		setInterval(function() {
-			ws.send('{ "ping": 1 }');
-		}, 10000); */
+    Event.fire(`${this.options.type}_open`, this);
   };
 
-  var onClose = function (evt) {
-    Event.fire('socket_before_close', self);
+  handleClose = (event) => {
+    Event.fire('socket_before_close', this);
+    this.ws.close();
+    this.connected = false;
+    this.zlibState.lib = false;
 
-    ws.close();
+    if (this.zlibState.stream) {
+      ZLIB.inflateEnd(this.zlibState.stream);
+    }
 
-    connected = z_lib = 0;
-
-    if (z_stream) ZLIB.inflateEnd(z_stream);
-
-    if (out)
-      out.add(
+    if (this.out) {
+      this.out.add(
         '<br><span style="color: green;">Remote server has disconnected. Refresh page to reconnect.<br></span>',
       );
+    }
 
-    if (o.onClose) o.onClose(evt);
+    if (this.options.onClose) {
+      this.options.onClose(event);
+    }
 
-    Event.fire('socket_close', self);
-    Event.fire(o.type + '_close', self);
-
+    Event.fire('socket_close', this);
+    Event.fire(`${this.options.type}_close`, this);
     log('Socket: closed');
   };
 
-  var onMessage = function (e) {
-    if (o.type == 'chat') {
+  handleError = () => {
+    this.out?.add(
+      '<span style="font-size: 12px; color: red;">Error: telnet proxy may be down.<br></span>',
+    );
+  };
+
+  handleMessage = (event) => {
+    if (this.options.type === 'chat') {
       log('Socket.onMessage chat_data');
-      Event.fire(o.type + '_data', e.data);
+      Event.fire(`${this.options.type}_data`, event.data);
       return;
     }
 
-    if (Event.q['socket_data']) {
-      var raw = e.data;
-      raw = Event.fire('socket_data', raw, self);
-      //log('after socket_data raw is '+raw);
-      if (!raw) return;
+    let data = event.data;
+    if (Event.q.socket_data) {
+      data = Event.fire('socket_data', data, this);
+      if (!data) return;
     }
+
+    this.processIncomingData(data);
+  };
+
+  processIncomingData(data) {
+    console.log('LOLOLO', data);
 
     if (Config.base64) {
       try {
         var bits = new Base64Reader(e.data);
         var translator = new Utf8Translator(bits);
         var reader = new TextReader(translator);
-        buff += reader.readToEnd();
-      } catch (ex) {
-        log('Attempt to base64-decode failed:');
-        buff += e.data;
+        this.buffer += reader.readToEnd();
+      } catch (error) {
+        log('Attempt to base64-decode failed:', error);
+        this.buffer += data;
       }
 
       return process();
     }
 
-    if (!z_lib) {
+    if (!this.zlibState.lib) {
       try {
-        var bits = new Base64Reader(e.data);
-        var inflator = new Inflator(bits);
-        var translator = new Utf8Translator(inflator);
-        var reader = new TextReader(translator);
-        buff += reader.readToEnd();
-      } catch (ex) {
-        z_lib = 1;
-        console.log('Attempting zlib stream decompression (MCCP).');
+        let bits = new Base64Reader(data);
+        let inflator = new Inflator(bits);
+        let translator = new Utf8Translator(inflator);
+        let reader = new TextReader(translator);
+        this.buffer += reader.readToEnd();
+      } catch {
+        this.zlibState.lib = 1;
+        log('Attempting zlib stream decompression (MCCP).');
       }
     }
 
-    if (z_lib) {
-      var bits = new Base64Reader(e.data);
-      z_raw = '';
+    if (this.zlibState.lib) {
+      try {
+        let b,
+          bits = new Base64Reader(data);
+        this.zlibState.raw = '';
 
-      while ((b = bits.readByte()) != -1) z_raw += String.fromCharCode(b);
+        while ((b = bits.readByte()) != -1)
+          this.zlibState.raw += String.fromCharCode(b);
 
-      if (!z_stream) z_stream = ZLIB.inflateInit();
+        if (!this.zlibState.stream) this.zlibState.stream = ZLIB.inflateInit();
 
-      z_raw = z_stream.inflate(z_raw);
+        this.zlibState.raw = this.zlibState.stream.inflate(this.zlibState.raw);
 
-      var char = new CharReader(z_raw);
-      var translator = new Utf8Translator(char);
-      var reader = new TextReader(translator);
-      buff += reader.readToEnd();
+        let char = new CharReader(this.zlibState.raw);
+        let translator = new Utf8Translator(char);
+        let reader = new TextReader(translator);
+        this.buffer += reader.readToEnd();
+      } catch (error) {
+        log('ZLIB processing failed:', error);
+      }
     }
 
-    process();
-  };
+    this.process();
+  }
 
-  var onError = function (evt) {
-    out.add(
-      '<span style="font-size: 13px; color: red;">Error: telnet proxy may be down.<br></span>',
-    );
-  };
+  initializeSocket() {
+    log(`Socket: setting websocket proxy to ${this.proxy}`);
+    log('Socket: connecting');
 
-  var getHistory = function () {
-    //log(cmds);
-    return cmds;
-  };
+    this.ws = new WebSocket(this.proxy);
+    this.ws.onopen = this.handleOpen;
+    this.ws.onclose = this.handleClose;
+    this.ws.onmessage = this.handleMessage;
+    this.ws.onerror = this.handleError;
 
-  var send = function (msg) {
-    msg = msg.trimm();
-    msg = Event.fire('before_send', msg, self);
+    window.onbeforeunload = () => {
+      this.ws.onclose = null;
+      this.ws.close();
+    };
+  }
+
+  send(message) {
+    message = message.trim();
+    message = Event.fire('before_send', message, this);
 
     if (
-      !msg.has('macro') &&
-      !msg.has('alias') &&
-      !msg.has('trig') &&
+      !message.includes('macro') &&
+      !message.includes('alias') &&
+      !message.includes('trig') &&
       Config.separator.length
     ) {
-      var re = new RegExp(Config.separator, 'g');
-      msg = msg.replace(re, '\r\n');
+      const separator = new RegExp(Config.separator, 'g');
+      message = message.replace(separator, '\r\n');
     }
 
-    /*
-		try {
-			msg = decodeURIComponent(escape(msg));
-			msg = unescape(encodeURIComponent(msg));
-		} catch(ex) {}
-		*/
+    log(`Socket.send: ${message}`);
 
-    log('Socket.send: ' + msg);
-
-    if (ws.send && connected) {
-      if (out) out.echo(msg);
-      ws.send(msg + '\r\n');
-    } else if (out)
-      out.add(
-        '<span style="font-size: 13px; color: green;">WARNING: please connect first.<br></span>',
+    if (this.ws.send && this.connected) {
+      this.out?.echo(message);
+      this.ws.send(message + '\r\n');
+    } else if (this.out) {
+      this.out.add(
+        '<span style="font-size: 12px; color: green;">WARNING: please connect first.<br></span>',
       );
-
-    return self;
-  };
-
-  var sendBin = function (msg) {
-    if (!connected)
-      return console.log('attempt to sendBin before socket connect');
-    log('Socket.sendBin: ' + msg);
-    ws.send(stringify({ bin: msg }));
-    return self;
-  };
-
-  var sendMSDP = function (msg) {
-    if (!connected)
-      return console.log('attempt to sendMSDP before socket connect');
-    log('Socket.sendMSDP: ' + stringify(msg));
-    ws.send(stringify({ msdp: msg }));
-    return self;
-  };
-
-  var sendGMCP = function (msg) {
-    if (!connected)
-      return console.log('attempt to sendGMCP before socket connect');
-    //log('Socket.sendGMCP: ' + stringify(msg));
-    ws.send(stringify({ gmcp: msg }));
-    return self;
-  };
-
-  /*
-	var multiprocess = function()  {
-		var i = 0, limit = 100, processing = 0, busy = 0;
-		var processor = setInterval(function() {
-			if(!busy) {  
-				busy = 1;
-					process();
-						if(++i == limit)
-							clearInterval(processor);
-				busy = 0;
-			}
-		}, 100);
-	}*/
-
-  var process = function (force) {
-    if (!buff.length) return;
-
-    var B = buff;
-    buff = '';
-
-    B = prepare(B, force);
-
-    if (B) {
-      out.add(B);
-      Event.fire('after_display', B);
     }
-  };
 
-  var prepare = function (t, force) {
+    return this;
+  }
+
+  sendBinary(message) {
+    if (!this.connected) {
+      console.log('attempt to sendBin before socket connect');
+      return this;
+    }
+    log(`Socket.sendBin: ${message}`);
+    this.ws.send(stringify({ bin: message }));
+    return this;
+  }
+
+  sendMSDP(message) {
+    if (!this.connected) {
+      console.log('attempt to sendMSDP before socket connect');
+      return this;
+    }
+    log(`Socket.sendMSDP: ${stringify(message)}`);
+    this.ws.send(stringify({ msdp: message }));
+    return this;
+  }
+
+  sendGMCP(message) {
+    if (!this.connected) {
+      console.log('attempt to sendGMCP before socket connect');
+      return this;
+    }
+    this.ws.send(stringify({ gmcp: message }));
+    return this;
+  }
+
+  process(force = false) {
+    if (!this.buffer.length) return;
+
+    let content = this.buffer;
+    this.buffer = '';
+
+    content = this.prepareContent(content, force);
+
+    if (content) {
+      this.out.add(content);
+      Event.fire('after_display', content);
+    }
+  }
+
+  prepareContent(text, force = false) {
+    let t = text;
+    // let buff = '';
+
     /* prevent split oob data */
     if (t.match(/\xff\xfa[^\xff\xf0\x01]+$/) && !force) {
       log('protocol split protection waiting for more input.');
-      buff = t;
-      //log(buff);
-      setTimeout(process, 1000, 1);
+      this.buffer = t;
+      setTimeout(() => this.process(true), 1000);
       return;
     }
 
-    if (Config.mxp.enabled()) {
-      var mxp = t.match(/\x1b\[[1-7]z/g);
+    if (Config.mxp?.enabled) {
+      const mxp = t.match(/\x1b\[[1-7]z/g);
 
       if (mxp && mxp.length % 2 && !force) {
-        console.log(
-          'mxp split protection waiting for more input: ' + mxp.length,
-        );
-        console.log(t);
-        buff = t;
-        //log(buff);
+        log('mxp split protection waiting for more input: ' + mxp.length);
+        log(t);
+        this.buffer = t;
         return;
-        //return setTimeout(process, 500, 1);
       }
     }
 
     if (t.match(/\x1b\[[^mz]+$/) && !force) {
       log('ansi split protection is waiting for more input.');
-      buff = t;
-      return setTimeout(process, 500, 1);
+      this.buffer = t;
+      setTimeout(() => this.process(true), 500);
+      return;
     }
 
     if (t.match(/<dest/i) && !force) {
       if (
         !t.match(/<\/dest/i) ||
-        t.match(/<dest/gi).length != t.match(/<\/dest/gi).length
+        t.match(/<dest/gi)?.length !== t.match(/<\/dest/gi)?.length
       ) {
-        buff = t;
+        this.buffer = t;
         return;
       }
     }
 
-    if (!t.has('portal.chatlog')) log(t);
+    // Use string includes instead of custom 'has' method
+    if (!t.includes('portal.chatlog')) {
+      log(t);
+    }
 
     t = Event.fire('before_process', t);
 
-    if (t.has('\xff\xfb\x45')) {
+    if (t.includes('\xff\xfb\x45')) {
       /*IAC WILL MSDP */
-      console.log('Got IAC WILL MSDP');
-      Event.fire('will_msdp', self);
+      log('Got IAC WILL MSDP');
+      Event.fire('will_msdp', this);
       t = t.replace(/\xff\xfb\x45/, '');
     }
 
-    if (t.has('\xff\xfb\xc9')) {
+    if (t.includes('\xff\xfb\xc9')) {
       /*IAC WILL GMCP */
-      console.log('Got IAC WILL GMCP');
-      Event.fire('will_gmcp', self);
+      log('Got IAC WILL GMCP');
+      Event.fire('will_gmcp', this);
       t = t.replace(/\xff\xfb\xc9/, '');
     }
 
-    if (t.has('\xff\xfaE')) {
-      var m = t.match(/\xff\xfaE([^]+?)\xff\xf0/gm);
-      //log('MSDP from server');
-      if (m && m.length) {
-        for (i = 0; i < m.length; i++) {
-          var d = m[i].substring(4, m[i].length - 2);
+    if (t.includes('\xff\xfaE')) {
+      const m = t.match(/\xff\xfaE([^]+?)\xff\xf0/gm);
+      if (m?.length) {
+        for (let i = 0; i < m.length; i++) {
+          let d = m[i].substring(4, m[i].length - 2);
           log('detected & parsing msdp: ');
           d = d
             .replace('/\x01/g', 'MSDP_VAL')
@@ -332,39 +380,36 @@ var Socket = function (o) {
       }
     }
 
-    if (!utf8 && t.has('ÿú* UTF-8ÿð')) {
-      utf8 = 1;
+    if (!this.utf8 && t.includes('ÿú* UTF-8ÿð')) {
+      this.utf8 = true;
       log('UTF-8 enabled.');
       t = t.replace(/ÿú.. UTF-8../, '');
     }
 
     /* gmcp */
-    if (t.has('\xff\xfa\xc9')) {
-      var m = t.match(/\xff\xfa\xc9([^]+?)\xff\xf0/gm);
-      //log('GMCP from server');
-      if (m && m.length) {
-        for (i = 0; i < m.length; i++) {
-          var d = m[i].substring(3, m[i].length - 2);
+    if (t.includes('\xff\xfa\xc9')) {
+      const m = t.match(/\xff\xfa\xc9([^]+?)\xff\xf0/gm);
+      if (m?.length) {
+        for (let i = 0; i < m.length; i++) {
+          const d = m[i].substring(3, m[i].length - 2);
           log('detected gmcp');
           Event.fire('gmcp', d);
-          //console.log(d);
           t = t.replace(m[i], '');
         }
       }
       /* avoid splitting gmcp */
-      if (t.has('\xff\xfa\xc9')) {
-        buff = t;
+      if (t.includes('\xff\xfa\xc9')) {
+        this.buffer = t;
         return '';
       }
     }
 
     /* atcp */
-
-    if (t.has('\xff\xfa\xc8')) {
-      var m = t.match(/\xff\xfa\xc8([^]+?)\xff\xf0/gm);
-      if (m && m.length) {
-        for (i = 0; i < m.length; i++) {
-          var d = m[i].substring(3, m[i].length - 2);
+    if (t.includes('\xff\xfa\xc8')) {
+      const m = t.match(/\xff\xfa\xc8([^]+?)\xff\xf0/gm);
+      if (m?.length) {
+        for (let i = 0; i < m.length; i++) {
+          const d = m[i].substring(3, m[i].length - 2);
           log('detected atcp:' + d);
           Event.fire('atcp', d);
           t = t.replace(m[i], '');
@@ -372,147 +417,96 @@ var Socket = function (o) {
       }
     }
 
-    if (t.has('\xff\xfb\x5b') && Config.base64) ws.send('\xff\xfd\x5b');
+    if (t.includes('\xff\xfb\x5b') && Config.base64) {
+      this.ws.send('\xff\xfd\x5b');
+    }
 
-    if (t.has('\xff\xfb\x01')) {
+    if (t.includes('\xff\xfb\x01')) {
       log('IAC WILL ECHO');
-
-      if (Config.ScrollView) Config.ScrollView.echoOff();
-
+      Config.ScrollView?.echoOff();
       t = t.replace(/\xff.\x01/g, '');
     }
 
-    if (t.has('\xff\xfc\x01')) {
+    if (t.includes('\xff\xfc\x01')) {
       log('IAC WONT ECHO');
-
-      if (Config.ScrollView) Config.ScrollView.echoOn();
-
+      Config.ScrollView?.echoOn();
       t = t.replace(/\xff.\x01/g, '');
     }
 
     t = Event.fire('internal_mxp', t);
+    t = Event.fire('after_protocols', t, this);
 
-    //log('after_protocols: '+t);
-
-    t = Event.fire('after_protocols', t, self);
-
-    if (t.has('\x01') && Config.debug) {
+    if (t.includes('\x01') && Config.debug) {
       log('Unhandled IAC sequence:');
-      var seq = [];
-      for (var i = 0; i < t.length; i++) seq.push(String.charCodeAt(t[i]));
-      dump(seq);
+      const seq = Array.from(t).map((char) => char.charCodeAt(0));
+      log(seq);
     }
 
-    if (t.has('\x07')) new Audio('/app/sound/ding.mp3').play();
+    if (t.includes('\x07')) {
+      new Audio('/app/sound/ding.mp3').play();
+    }
 
-    t = t.replace(/([^\x1b])</g, '$1&lt;');
-    t = t.replace(/([^\x1b])>/g, '$1&gt;');
-    t = t.replace(/\x1b>/g, '>');
-    t = t.replace(/\x1b</g, '<');
+    t = t
+      .replace(/([^\x1b])</g, '$1&lt;')
+      .replace(/([^\x1b])>/g, '$1&gt;')
+      .replace(/\x1b>/g, '>')
+      .replace(/\x1b</g, '<');
 
-    t = Event.fire('before_html', t, self);
+    t = Event.fire('before_html', t, this);
     t = t.replace(
       /([^"'])(http.*:\/\/[^\s\x1b"']+)/g,
       '$1<a href="$2" target="_blank">$2</a>',
     );
-    t = Event.fire('internal_colorize', t, self);
+    t = Event.fire('internal_colorize', t, this);
 
-    t = t.replace(/\xff\xfa.+\xff\xf0/g, '');
-    t = t.replace(/\xff(\xfa|\xfb|\xfc|\xfd|\xfe)./g, '');
-    t = t.replace(/\x07/g, ''); //bell
-    t = t.replace(/\x1b\[1;1/g, ''); //clear screen, ignore for now
-    t = t.replace(/([ÿùïð])/g, '');
-    t = t.replace(/\x1b\[[A-Z0-9]/gi, ''); //erase unsupported ansi control data
-    t = t.replace(';0;37', ''); //erase unsupported ansi control data
-    //t = t.replace(/\x1b/g,'');
+    t = t
+      .replace(/\xff\xfa.+\xff\xf0/g, '')
+      .replace(/\xff(\xfa|\xfb|\xfc|\xfd|\xfe)./g, '')
+      .replace(/\x07/g, '') //bell
+      .replace(/\x1b\[1;1/g, '') //clear screen, ignore for now
+      .replace(/([ÿùïð])/g, '')
+      .replace(/\x1b\[[A-Z0-9]/gi, '') //erase unsupported ansi control data
+      .replace(';0;37', '') //erase unsupported ansi control data
+      .replace(/\uFFFF/gi, '') // utf-8 non-character
+      .replace(/\n\r/g, '\n')
+      .replace(/\r\n/g, '\n');
 
     /* orphaned escapes still possible during negotiation */
     if (t.match(/^\x1b+$/)) return '';
 
-    t = t.replace(/\uFFFF/gi, ''); /* utf-8 non-character */
+    return Event.fire('before_display', t);
+  }
 
-    //console.log('before_display: '+t);
-
-    t = t.replace(/\n\r/g, '\n');
-    t = t.replace(/\r\n/g, '\n');
-
-    t = Event.fire('before_display', t);
-
-    return t;
-  };
-
-  var connect = function () {
-    log('Socket: setting websocket proxy to ' + proxy);
-    log('Socket: connecting');
-    ws = new WebSocket(proxy);
-    ws.onopen = function (e) {
-      onOpen(e);
-    };
-    ws.onclose = function (e) {
-      onClose(e);
-    };
-    ws.onmessage = function (e) {
-      onMessage(e);
-    };
-    ws.onerror = function (e) {
-      onError(e);
-    };
-    window.onbeforeunload = function () {
-      ws.onclose = function () {};
-      ws.close();
-    };
-  };
-
-  var reconnect = function () {
-    if (connected) {
-      ws.onclose = function () {};
-      ws.close();
+  reconnect() {
+    if (this.connected) {
+      this.ws.onclose = null;
+      this.ws.close();
     }
 
-    buff = '';
+    this.buffer = '';
     Config.mxp.disable();
+    this.initializeSocket();
+  }
 
-    connect();
-  };
-
-  var echo = function (msg) {
-    out.echo(msg);
-  };
-
-  //if (o.proxy && out)
-  //out.add('<span style="color: green;">Setting websocket proxy to '+proxy+'.<br></span>');
-
-  var self = {
-    send: send,
-    sendBin: sendBin,
-    sendMSDP: sendMSDP,
-    sendGMCP: sendGMCP,
-    echo: echo,
-    type: function () {
-      return o.type;
-    },
-    write: function (d) {
-      if (connected) {
-        ws.send(d + '\r\n');
-        log('Socket.write: ' + d);
-      }
-    },
-    getProxy: function () {
-      return proxy;
-    },
-    getSocket: function () {
-      return ws;
-    },
-    connected: function () {
-      return connected;
-    },
-    reconnect: reconnect,
-    process: process,
-  };
-
-  if (o.type == 'telnet') Config.socket = Config.Socket = self;
-
-  connect();
-
-  return self;
-};
+  // createInterface() {
+  //   return {
+  //     send: (msg) => this.send(msg),
+  //     sendBin: (msg) => this.sendBinary(msg),
+  //     sendMSDP: (msg) => this.sendMSDP(msg),
+  //     sendGMCP: (msg) => this.sendGMCP(msg),
+  //     echo: (msg) => this.out?.echo(msg),
+  //     type: () => this.options.type,
+  //     write: (data) => {
+  //       if (this.connected) {
+  //         this.ws.send(data + '\r\n');
+  //         log(`Socket.write: ${data}`);
+  //       }
+  //     },
+  //     getProxy: () => this.proxy,
+  //     getSocket: () => this.ws,
+  //     connected: () => this.connected,
+  //     reconnect: () => this.reconnect(),
+  //     process: () => this.process(),
+  //   };
+  // }
+}

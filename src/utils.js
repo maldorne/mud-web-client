@@ -1,17 +1,10 @@
-String.prototype.has = function (a) {
-  if (!a.length) return false;
-  return this.indexOf(a) != -1;
-};
+import { Config } from './config.js';
+import * as polyfills from './polyfills.js';
 
-String.prototype.start = function (a) {
-  return this.indexOf(a) == 0;
-};
+// execute polyfills
+polyfills.default();
 
-String.prototype.cap = function () {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};
-
-stringify = function (A) {
+function stringify(A) {
   var cache = [];
   var val = JSON.stringify(A, function (k, v) {
     if (typeof v === 'object' && v !== null) {
@@ -21,7 +14,7 @@ stringify = function (A) {
     return v;
   });
   return val;
-};
+}
 
 function html_encode(str) {
   return str
@@ -88,142 +81,21 @@ function setCaretPosition(ctrl, pos) {
   }
 }
 
-Date.prototype.ymd = function () {
-  var yyyy = this.getFullYear().toString();
-  var mm = (this.getMonth() + 1).toString();
-  var dd = this.getDate().toString();
-  return (
-    yyyy + '-' + (mm[1] ? mm : '0' + mm[0]) + '-' + (dd[1] ? dd : '0' + dd[0])
-  );
-};
-
-Array.prototype.remove = function () {
-  var what,
-    a = arguments,
-    L = a.length,
-    ax;
-  while (L && this.length) {
-    what = a[--L];
-    while ((ax = this.indexOf(what)) != -1) {
-      this.splice(ax, 1);
-    }
-  }
-  return this;
-};
-
-Array.prototype.index = function (key1, val1, key2, val2) {
-  if (!key1) {
-    for (var i = 0; i < this.length; i++) if (this[i] == val1) return i;
-  }
-
-  if (!this.length || !this[0][key1]) return -1;
-  for (var i = 0; i < this.length; i++) {
-    if (this[i][key1] == val1) {
-      if (!val2) return i;
-      else if (this[i][key2] == val2) return i;
-    }
-  }
-
-  return -1;
-};
-
-Array.prototype.fetch = function (key1, val1, key2) {
-  if (!this.length || !this[0][key1]) return null;
-
-  for (var i = 0; i < this.length; i++) {
-    if (this[i][key1] == val1) return this[i][key2];
-  }
-
-  return null;
-};
-
-Array.prototype.has = function (v) {
-  return this.indexOf(v) != -1;
-};
-
-Array.prototype.not = function (key1, val1) {
-  if (!key1) return null;
-  for (var i = 0; i < this.length; i++) if (this[i] != val1) return this[i];
-  return null;
-};
-
-Array.prototype.unique = function () {
-  return this.reduce(function (p, c) {
-    if (p.indexOf(c) < 0) p.push(c);
-    return p;
-  }, []);
-};
-
-Array.prototype.add = function (A) {
-  if (this.indexOf(A) == -1) this.push(A);
-};
-
-Array.prototype.remove = function (A) {
-  if (this.indexOf(A) != -1) this.splice(this.indexOf(A), 1);
-};
-
-if (!Array.prototype.filter) {
-  Array.prototype.filter = function (fun /*, thisp*/) {
-    var len = this.length;
-    if (typeof fun != 'function') throw new TypeError();
-
-    var res = new Array();
-    var thisp = arguments[1];
-    for (var i = 0; i < len; i++) {
-      if (i in this) {
-        var val = this[i]; // in case fun mutates this
-        if (fun.call(thisp, val, i, this)) res.push(val);
-      }
-    }
-    return res;
-  };
-}
-
-String.prototype.trimm = function () {
-  return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-};
-
-String.prototype.param = function (A) {
-  A = A.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-  var regex = new RegExp('[\\?&]' + A + '=([^&#]*)');
-  var results = regex.exec(this);
-  if (results == null) return '';
-  else return decodeURIComponent(results[1]);
-};
-
-/*
-if (!Object.prototype.extend)
-	Object.defineProperty(Object.prototype, "extend", {
-		enumerable: false,
-		value: function() {
-			var dest = this;
-			for (var i = 0; i < arguments.length; i++) {
-				var from = arguments[i], 
-					props = Object.getOwnPropertyNames(from);
-					props.forEach(function(name) {
-						var d = Object.getOwnPropertyDescriptor(from, name);
-						Object.defineProperty(dest, name, d);
-					});
-			}
-			return this;
-		}
-	});
-*/
-var param = function (A) {
+function param(A) {
   A = A.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
   var regex = new RegExp('[\\?&]' + A + '=([^&#]*)');
   var results = regex.exec(window.location.search);
   if (results == null) return '';
   else return decodeURIComponent(results[1]);
-};
+}
 
-var log = function () {
+function log() {
   if (Config.debug) console.log.apply(console, arguments);
-};
+}
 
-var dump = function (A) {
+function dump(A) {
   if (Config.debug) console.log(stringify(A));
-};
+}
 
 function exists(A) {
   return typeof A != 'undefined' ? 1 : 0;
@@ -231,9 +103,9 @@ function exists(A) {
 
 function addCommas(nStr) {
   nStr += '';
-  x = nStr.split('.');
-  x1 = x[0];
-  x2 = x.length > 1 ? '.' + x[1] : '';
+  let x = nStr.split('.');
+  let x1 = x[0];
+  let x2 = x.length > 1 ? '.' + x[1] : '';
   var rgx = /(\d+)(\d{3})/;
   while (rgx.test(x1)) {
     x1 = x1.replace(rgx, '$1' + ',' + '$2');
@@ -241,19 +113,7 @@ function addCommas(nStr) {
   return x1 + x2;
 }
 
-jQuery.fn.center = function () {
-  this.css(
-    'top',
-    Math.max(0, (jQuery(window).height() - jQuery(this).height()) / 2),
-  );
-  this.css(
-    'left',
-    Math.max(0, (jQuery(window).width() - jQuery(this).width()) / 2),
-  );
-  return this;
-};
-
-var multiprocess = function (cb) {
+function multiprocess(cb) {
   var i = 0,
     busy = 0,
     done = 0;
@@ -265,7 +125,7 @@ var multiprocess = function (cb) {
       busy = 0;
     }
   }, 100);
-};
+}
 
 function glow(url) {
   var stdDeviation = 2,
@@ -323,3 +183,20 @@ function glow(url) {
 
   return my;
 }
+
+export {
+  stringify,
+  html_encode,
+  html_decode,
+  addslashes,
+  getSelText,
+  getCaretPosition,
+  setCaretPosition,
+  param,
+  log,
+  dump,
+  exists,
+  addCommas,
+  multiprocess,
+  glow,
+};

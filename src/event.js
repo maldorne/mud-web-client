@@ -1,4 +1,6 @@
-var Event = {
+import { log } from './utils.js';
+
+export const Event = {
   q: {
     socket_open: [],
     socket_data: [],
@@ -40,63 +42,60 @@ var Event = {
     window_show: [],
   },
 
-  fire: function (event, data, caller) {
+  fire(event, data, caller) {
     if (!this.q[event]) {
-      log('Event.js: No such event to fire: ' + event);
+      log(`Event.js: No such event to fire: ${event}`);
       return 0;
     }
-    //else
-    //log('Event.fire: '+event);
 
-    for (var i = 0; i < this.q[event].length; i++)
-      data = this.q[event][i](data, caller);
-
-    return data;
+    return this.q[event].reduce(
+      (acc, callback) => callback(acc, caller),
+      data,
+    );
   },
 
-  listen: function (event, cb) {
+  listen(event, callback) {
     if (!this.q[event]) {
-      log('Event.js: No such event to subscribe to: ' + event);
+      log(`Event.js: No such event to subscribe to: ${event}`);
       return 0;
     }
-    this.q[event].push(cb);
+    this.q[event].push(callback);
     return 1;
   },
 
-  drop: function (event, cb) {
+  drop(event, callback) {
     if (!this.q[event]) {
-      log('Event.js: No such event to drop from: ' + event);
-      return;
+      log(`Event.js: No such event to drop from: ${event}`);
+      return 0;
     }
-    for (var i = 0; i < this.q[event].length; i++)
-      if (this.q[event][i] == cb) {
-        this.q[event].splice(i, 1);
-        return 1;
-      }
+
+    const index = this.q[event].indexOf(callback);
+    if (index !== -1) {
+      this.q[event].splice(index, 1);
+      return 1;
+    }
     return 0;
   },
 
-  create: function (event) {
+  create(event) {
     if (this.q[event]) {
       log(
-        'Event.js: This event already exists and will not be created: ' +
-          event,
+        `Event.js: This event already exists and will not be created: ${event}`,
       );
       return;
     }
     this.q[event] = [];
-    log('Event.js: Event created: ' + event);
+    log(`Event.js: Event created: ${event}`);
   },
 
-  destroy: function (event) {
+  destroy(event) {
     if (!this.q[event]) {
       log(
-        'Event.js: This event does not exist and will not be destroyed: ' +
-          event,
+        `Event.js: This event does not exist and will not be destroyed: ${event}`,
       );
       return;
     }
     delete this.q[event];
-    log('Event.js: Event destroyed: ' + event);
+    log(`Event.js: Event destroyed: ${event}`);
   },
 };
