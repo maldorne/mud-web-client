@@ -46,7 +46,9 @@ export const Config = {
   separator: window.location.search.includes('separator')
     ? param('separator')
     : ';',
-  proxy: 'wss://play.maldorne.org:6200/',
+  // proxy: 'wss://play.maldorne.org:6200/',
+  proxy: 'wss://mush.ferrellweb.com:4242/wsclient',
+  // proxy: 'wss://discworld.starturtle.net:4244', // send Blobs
   view: `${param('host')}:${param('port')}:${window.screen.width}x${window.screen.height}`,
   uncompressed: param('uncompressed') || 0,
 
