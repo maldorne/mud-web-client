@@ -82,7 +82,7 @@ export class ModalInput {
     }
 
     // Remove existing modals
-    const existingModal = document.querySelector('.modal');
+    const existingModal = j('.modal');
     if (existingModal) {
       const modal = BootstrapModal.getInstance(existingModal);
       if (modal) modal.hide();

@@ -540,8 +540,8 @@ export class Socket {
 
   write(data) {
     if (this.connected) {
-      this.ws.send(data + '\r\n');
       log(`Socket.write: ${data}`);
+      this.send(data);
     }
   }
 

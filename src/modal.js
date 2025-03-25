@@ -89,7 +89,7 @@ export class Modal {
               ${o.text ? `<div class="modal-text-content">${o.text}</div>` : o.html || ''}
             </div>
             <div class="modal-footer">
-              <button class="btn btn-primary kbutton dismiss mo-dismiss" data-bs-dismiss="modal">OK</button>
+              <button class="btn btn-primary kbutton ok-button dismiss mo-dismiss" data-bs-dismiss="modal">OK</button>
             </div>
           </div>
         </div>
@@ -103,6 +103,10 @@ export class Modal {
 
     if (o.closeText || o.cancelText) {
       j('.modal .dismiss').html(o.closeText || o.cancelText);
+    }
+
+    if (o.showOk === false) {
+      j('.modal .ok-button').remove();
     }
 
     if (o.closeable === false || o.closeable === 0) {
@@ -138,24 +142,36 @@ export class Modal {
       o.buttons.forEach((button, index) => {
         const buttonEl = `
           <button class="btn btn-secondary kbutton custom-${index}"
-            ${button.keep ? '' : 'data-bs-dismiss="modal"'}>
+            ${button.keep ? '' : ''}>
             ${button.text}
           </button>
         `;
+
         j('.modal-footer').append(buttonEl);
 
+        const $button = j('.modal-footer .custom-' + index);
+
         if (button.send) {
-          j('.modal-footer .custom-' + index).click(() => {
+          $button.on('click', () => {
             Config.Socket.write(button.send);
+            if (!button.keep) {
+              this.modalInstance.hide();
+            }
           });
         }
 
-        if (button.click) {
-          j('.modal-footer .custom-' + index).click(button.click);
+        if (button.handler) {
+          $button.on('click', (e) => {
+            e.preventDefault();
+            button.handler();
+            if (!button.keep) {
+              this.modalInstance.hide();
+            }
+          });
         }
 
         if (button.css) {
-          j('.modal-footer .custom-' + index).css(button.css);
+          $button.css(button.css);
         }
       });
     } else {

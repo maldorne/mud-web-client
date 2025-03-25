@@ -221,12 +221,10 @@ export class ScrollView {
     j(`${this.id} .input`).append(`
       <a class="kbutton multiline tip ${multilineId}" 
          title="Send multi-line text." 
-         style="height: 16px !important; padding: 4px 8px !important; margin-left: 6px; position: relative; top: 3px;">
+         style="height: 21px;position: relative;top: 1px;display: inline-block;padding: 0px 8px !important;;">
         <i class="fa-solid fa-align-justify"></i>
       </a>
     `);
-
-    j(`.${multilineId}`).click(this.handleMultiline);
 
     this.setupMultilineInput();
     this.setupAutocomplete();
@@ -238,27 +236,22 @@ export class ScrollView {
 
       new Modal({
         title: 'Multi-Line Input',
-        text: `
-          <textarea class="multitext" 
-                    autocorrect="off" 
-                    autocapitalize="off" 
-                    spellcheck="${spellcheck ? 'true' : 'false'}">
-            ${text}
-          </textarea>
-        `,
+        text:
+          `<textarea class="multitext" autocorrect="off" autocapitalize="off" spellcheck="${spellcheck ? 'true' : 'false'}">` +
+          text +
+          '</textarea>',
         closeable: true,
+        showOk: false, // Disable default OK button
         buttons: [
           {
             text: 'Send',
-            click: () => {
+            handler: () => {
               const messages = j('.multitext').val().split('\n');
-              const socket = Config.Socket.getSocket();
-
               messages.forEach((msg, index) => {
                 setTimeout(
                   () => {
-                    socket.send(msg + '\r\n');
-                    this.echo(msg);
+                    Config.Socket.write(msg);
+                    // this.echo(msg);
                   },
                   100 * (index + 1),
                 );
@@ -269,7 +262,7 @@ export class ScrollView {
         ],
       });
 
-      j('#modal').on('shown', () => {
+      j('.modal').on('shown.bs.modal', () => {
         j('.multitext').focus();
       });
 
