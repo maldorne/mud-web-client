@@ -56,6 +56,7 @@ After changing these values, you can rebuild the project with `npm run build` an
 
 ## Usage
 
+* If you make changes (even only the `config.js` file), you can run `npm run build` to generate the new files in the `/dist` directory.
 * Copy all files inside the `/dist` directory to a web-accessible directory on your web server.
 * Point a browser at the root of that directory to load the included `index.html` file.
 
