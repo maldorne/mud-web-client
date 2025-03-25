@@ -48,6 +48,8 @@ export const Config = {
     : ';',
   proxy: 'wss://play.maldorne.org:6200/',
   view: `${param('host')}:${param('port')}:${window.screen.width}x${window.screen.height}`,
+
+  // if your mud does not use any kind of encoding or compression, just plain text
   uncompressed: param('uncompressed') || 0,
 
   // MU* protocol (text channel, json channel, etc)
