@@ -38,7 +38,7 @@ export class Socket {
     this.echo = true;
     this.keepCommand = Config.getSetting('keepcom') ?? true;
 
-    if (this.proxy.includes('maldorne')) {
+    if (this.proxy?.includes('maldorne')) {
       delete this.options.proxy;
     }
 
@@ -116,7 +116,7 @@ export class Socket {
 
     if (this.out) {
       this.out.add(
-        '<br><span style="color: green;">Remote server has disconnected. Refresh page to reconnect.<br></span>',
+        '<br><span style="color: green;">Remote server has disconnected. Refresh page to reconnect.</span><br>',
       );
     }
 
@@ -131,7 +131,7 @@ export class Socket {
 
   handleError = () => {
     this.out?.add(
-      '<span style="font-size: 12px; color: red;">Error: telnet proxy may be down.<br></span>',
+      '<span style="font-size: 12px; color: red;">Error: telnet proxy may be down.</span><br>',
     );
   };
 
@@ -151,29 +151,37 @@ export class Socket {
     this.processIncomingData(data);
   };
 
-  processIncomingData(data) {
+  async processIncomingData(data) {
     log('process incoming data', data);
 
-    // Add MUSH-specific protocol detection
-    // if (data.startsWith('\xFF')) {
-    //   log('MUSH protocol sequence detected');
-    //   // Strip the IAC byte if it's alone
-    //   if (data.length === 1) {
-    //     return '';
-    //   }
-    // }
+    // Handle Blob data
+    if (data instanceof Blob) {
+      try {
+        const text = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsText(data);
+        });
+        data = text;
+      } catch (error) {
+        log('Error reading Blob:', error);
+        return;
+      }
+    }
 
     if (Config.uncompressed) {
       // Add debug logging for control characters
-      if (Config.debug) {
-        const chars = Array.from(data).map((char) => ({
-          char: char,
-          code: char.charCodeAt(0),
-          hex: char.charCodeAt(0).toString(16),
-        }));
-        log('Raw incoming data characters:', chars);
-      }
+      // if (Config.debug) {
+      //   const chars = Array.from(data).map((char) => ({
+      //     char: char,
+      //     code: char.charCodeAt(0),
+      //     hex: char.charCodeAt(0).toString(16),
+      //   }));
+      //   log('Raw incoming data characters:', chars);
+      // }
 
+      // just pass the information, as it is not compressed
       this.buffer += data;
 
       return this.process();
@@ -365,14 +373,14 @@ export class Socket {
     t = Event.fire('before_process', t);
 
     if (t.includes('\xff\xfb\x45')) {
-      /*IAC WILL MSDP */
+      /* IAC WILL MSDP */
       log('Got IAC WILL MSDP');
       Event.fire('will_msdp', this);
       t = t.replace(/\xff\xfb\x45/, '');
     }
 
     if (t.includes('\xff\xfb\xc9')) {
-      /*IAC WILL GMCP */
+      /* IAC WILL GMCP */
       log('Got IAC WILL GMCP');
       Event.fire('will_gmcp', this);
       t = t.replace(/\xff\xfb\xc9/, '');
