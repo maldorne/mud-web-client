@@ -25,7 +25,7 @@ export class Toolbar {
         win.show();
         button.removeClass('disabled').addClass('active');
       } else {
-        win.front();
+        win.bringToFront();
         j('#tmp-toolbar button').removeClass('active');
         button.addClass('active');
       }
@@ -47,7 +47,7 @@ export class Toolbar {
     j('.window').each(function () {
       const $window = j(this);
       const id = $window.attr('id');
-      const title = $window.get(0).win.title() || id;
+      const title = $window.get(0).win.setTitle() || id;
 
       const button = `
         <button href="#${id}" class="btn kbutton">

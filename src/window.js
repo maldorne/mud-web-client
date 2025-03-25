@@ -57,7 +57,7 @@ export class Window {
     }
 
     this.init();
-    return this.createInterface();
+    // return this.createInterface();
   }
 
   init() {
@@ -79,6 +79,9 @@ export class Window {
     this.setupTabs();
 
     this.bringToFront(false);
+
+    j(this.options.id).get(0).win = this;
+    Event.fire('window_open', this);
   }
 
   createWindowElement() {
@@ -197,7 +200,7 @@ export class Window {
   setupDraggable(cancel = false) {
     try {
       j(this.id).draggable('destroy');
-    } catch (ex) {
+    } catch {
       // Ignore errors
     }
 
@@ -330,8 +333,9 @@ export class Window {
   savePosition() {
     if (!this.save) return;
 
-    if (!user.pref.win) user.pref.win = {};
-    if (!user.pref.win[this.viewId]) user.pref.win[this.viewId] = {};
+    if (!window.user.pref.win) window.user.pref.win = {};
+    if (!window.user.pref.win[this.viewId])
+      window.user.pref.win[this.viewId] = {};
 
     j('.window').each((_, element) => {
       const $window = j(element);
@@ -347,21 +351,21 @@ export class Window {
         collapsed: $window.is(':visible') ? 0 : 1,
       };
 
-      user.pref.win[this.viewId]['#' + id] = windowState;
+      window.user.pref.win[this.viewId]['#' + id] = windowState;
       log(`Saving window position: #${id} ${stringify(windowState)}`);
     });
 
     j.post('?option=com_portal&task=set_pref', {
-      pref: stringify(user.pref),
+      pref: stringify(window.user.pref),
     });
   }
 
   getPosition(options) {
-    if (!this.save || !user.id || !user.pref?.win) return true;
+    if (!this.save || !window.user.id || !window.user.pref?.win) return true;
 
     log(`Restoring saved position: ${options.id}`);
 
-    const prefs = user.pref.win;
+    const prefs = window.user.pref.win;
     const prefKeys = Object.keys(prefs);
 
     while (prefKeys.length > 20) {
@@ -503,26 +507,26 @@ export class Window {
     return target;
   }
 
-  createInterface() {
-    const self = {
-      id: this.options.id,
-      title: (t) => this.setTitle(t),
-      button: (o) => this.addButton(o),
-      tab: (t) => this.addTab(t),
-      dock: (t) => this.dock(t),
-      front: () => this.bringToFront(),
-      maximize: () => this.maximize(),
-      show: () => this.show(),
-      hide: () => this.hide(),
-      maximized: () => this.maximized,
-      resize: () => this.resize(),
-      draggable: (cancel) => this.setupDraggable(cancel),
-    };
+  // createInterface() {
+  //   const self = {
+  //     id: this.options.id,
+  //     title: (t) => this.setTitle(t),
+  //     button: (o) => this.addButton(o),
+  //     tab: (t) => this.addTab(t),
+  //     dock: (t) => this.dock(t),
+  //     front: () => this.bringToFront(),
+  //     maximize: () => this.maximize(),
+  //     show: () => this.show(),
+  //     hide: () => this.hide(),
+  //     maximized: () => this.maximized,
+  //     resize: () => this.resize(),
+  //     draggable: (cancel) => this.setupDraggable(cancel),
+  //   };
 
-    j(this.options.id).get(0).win = self;
-    Event.fire('window_open', self);
-    return self;
-  }
+  //   j(this.options.id).get(0).win = self;
+  //   Event.fire('window_open', self);
+  //   return self;
+  // }
 
   setTitle(title) {
     if (title) {
@@ -562,5 +566,13 @@ export class Window {
     Event.fire('window_hide', this.id);
     this.savePosition();
     return this;
+  }
+
+  // front() {
+  //   return this.bringToFront();
+  // }
+
+  draggable(cancel) {
+    return this.setupDraggable(cancel);
   }
 }

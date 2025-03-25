@@ -89,7 +89,7 @@ export class ScrollView {
   }
 
   setupButtons() {
-    this.win.button({
+    this.win.addButton({
       title: 'Reconnect.',
       icon: 'fa-solid fa-rotate',
       click: () => {
@@ -98,7 +98,7 @@ export class ScrollView {
       },
     });
 
-    this.win.button({
+    this.win.addButton({
       title: 'Increase the font size.',
       icon: 'fa-solid fa-magnifying-glass-plus',
       click: (e) => {
@@ -114,7 +114,7 @@ export class ScrollView {
       },
     });
 
-    this.win.button({
+    this.win.addButton({
       title: 'Decrease the font size.',
       icon: 'fa-solid fa-magnifying-glass-minus',
       click: (e) => {
@@ -130,7 +130,7 @@ export class ScrollView {
       },
     });
 
-    this.win.button({
+    this.win.addButton({
       title: 'Download a session log.',
       icon: 'fa-solid fa-download',
       click: (e) => {
@@ -146,7 +146,7 @@ export class ScrollView {
       },
     });
 
-    this.win.button({
+    this.win.addButton({
       title: 'Toggle a freezepane.',
       icon: 'fa-solid fa-columns',
       click: (e) => this.toggleFreezepane(e),
@@ -434,7 +434,7 @@ export class ScrollView {
   }
 
   title(text) {
-    this.win.title(text);
+    this.win.setTitle(text);
     document.title = text || Config.name;
   }
 

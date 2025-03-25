@@ -95,8 +95,8 @@ export function initializeCore() {
     )
       j('.app').prepend(
         '<a class="right" style="opacity:0.5;margin-right: 8px" \
-		href="/component/comprofiler/login" target="_self">\
-		<i class="icon-sun"></i> login</a>',
+          href="/component/comprofiler/login" target="_self">\
+          <i class="icon-sun"></i> login</a>',
       );
 
     if (Config.kong) Config.ScrollView.title('Bedlam');
@@ -106,14 +106,26 @@ export function initializeCore() {
     j(this).find('.badge').remove();
   });
 
-  if (!Config.device.touch)
+  if (!Config.device.touch) {
     j('body').tooltip({
-      selector: '.tip',
-      container: 'body',
+      items: '.tip', // Elements that trigger the tooltip
+      tooltipClass: 'ui-tooltip', // Add custom class for styling
+      position: {
+        my: 'center bottom-10',
+        at: 'center top',
+        collision: 'flipfit',
+      },
+      show: {
+        effect: 'fadeIn',
+        duration: 200,
+      },
+      hide: {
+        effect: 'fadeOut',
+        duration: 100,
+      },
       content: function () {
         return j(this).prop('title');
       },
-      html: true,
-      position: { my: 'center bottom', at: 'center top' },
     });
+  }
 }

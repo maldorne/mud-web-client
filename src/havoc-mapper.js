@@ -119,7 +119,7 @@ var Mapper = function (o) {
 
   var setTitle = function (t) {
     title = (was.id || was.zone) + ': ' + was.x + 'x' + was.y + ' ' + t.name;
-    win.title(title);
+    win.setTitle(title);
     j(marker).attr('title', title);
   };
 

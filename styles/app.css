@@ -548,6 +548,16 @@ button.disabled {
 	pointer-events: none;
 }
 
+.ui-tooltip {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 300px;
+  z-index: 9999;
+}
+
 .app .ui-icon-gripsmall-diagonal-se {
 	opacity: 0.6	
 }
@@ -660,8 +670,8 @@ p:focus, ul:focus, div:focus {
 }
 
 .app .tooltip, .app .ui-tooltip {
-    border: 0.5px solid rgba(233, 193, 72, 0.6) !important;
-    box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 193, 72, 0.6) !important;
+  border: 0.5px solid rgba(233, 193, 72, 0.6) !important;
+  box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 193, 72, 0.6) !important;
 	padding: 3px;
 	font-size: 13px;
 	font-family: "Open Sans","Lucida Console",Arial,Helvetica,sans-serif;
