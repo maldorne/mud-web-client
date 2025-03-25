@@ -52,12 +52,12 @@ These are the default values used when the client does not receive specific para
  * port: The port where the mud is running. The mud, **not** the proxy.
  * proxy: The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.
 
-After changing these values, you can rebuild the project with `npm run build` and copy the files in the `/dist` directory to your web server, as it is explained above.
+After changing these values, you can rebuild the project with `npm run build` and copy the files in the `/dist` directory to your web server, as it is explained below.
 
 ## Usage
 
 * If you make changes (even only the `config.js` file), you can run `npm run build` to generate the new files in the `/dist` directory.
-* Copy all files inside the `/dist` directory to a web-accessible directory on your web server.
+* Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
 * Point a browser at the root of that directory to load the included `index.html` file.
 
 ## Changelog
