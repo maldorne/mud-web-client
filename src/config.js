@@ -50,6 +50,9 @@ export const Config = {
   view: `${param('host')}:${param('port')}:${window.screen.width}x${window.screen.height}`,
   uncompressed: param('uncompressed') || 0,
 
+  // MU* protocol (text channel, json channel, etc)
+  useMuProtocol: param('useMuProtocol') || 0,
+
   device: {
     touch: 'ontouchstart' in window,
     lowres: j(window).width() <= 640 && j(window).height() <= 640,
@@ -69,3 +72,11 @@ export const Config = {
 
 log(Config);
 log(stringify(Config.settings));
+
+export const MU_CHANNELS = {
+  TEXT: 't',
+  JSON: 'j',
+  HTML: 'h',
+  PUEBLO: 'p',
+  PROMPT: '>',
+};

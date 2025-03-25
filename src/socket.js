@@ -1,4 +1,4 @@
-import { Config } from './config.js';
+import { Config, MU_CHANNELS } from './config.js';
 import { Event } from './event.js';
 import { Colorize } from './colorize.js';
 import { log, stringify } from './utils.js';
@@ -171,16 +171,6 @@ export class Socket {
     }
 
     if (Config.uncompressed) {
-      // Add debug logging for control characters
-      // if (Config.debug) {
-      //   const chars = Array.from(data).map((char) => ({
-      //     char: char,
-      //     code: char.charCodeAt(0),
-      //     hex: char.charCodeAt(0).toString(16),
-      //   }));
-      //   log('Raw incoming data characters:', chars);
-      // }
-
       // just pass the information, as it is not compressed
       this.buffer += data;
 
@@ -269,10 +259,14 @@ export class Socket {
       message = message.replace(separator, '\r\n');
     }
 
-    log(`Socket.send: ${message}`);
-
     if (this.ws.send && this.connected) {
       this.out?.echo(message);
+
+      if (Config.useMuProtocol) {
+        message = MU_CHANNELS.TEXT + message;
+      }
+
+      log(`Socket.send: ${message}`);
       this.ws.send(message + '\r\n');
     } else if (this.out) {
       this.out.add(
@@ -372,6 +366,24 @@ export class Socket {
 
     t = Event.fire('before_process', t);
 
+    // Add MU*-specific protocol detection
+    if (Config.useMuProtocol) {
+      // normal text messages
+      if (t.startsWith(MU_CHANNELS.TEXT)) {
+        t = t.substring(MU_CHANNELS.TEXT.length);
+      } else if (t.startsWith(MU_CHANNELS.JSON)) {
+        // json messages, probably gmpc?
+        t = t.substring(MU_CHANNELS.JSON.length);
+        Event.fire('gmcp', t);
+        return;
+      } else if (t.startsWith(MU_CHANNELS.PUEBLO)) {
+        // pueblo messages, don't know what to do with them yet
+        t = t.substring(MU_CHANNELS.PUEBLO.length);
+        Event.fire('pueblo', t);
+        return;
+      }
+    }
+
     if (t.includes('\xff\xfb\x45')) {
       /* IAC WILL MSDP */
       log('Got IAC WILL MSDP');
@@ -385,6 +397,14 @@ export class Socket {
       Event.fire('will_gmcp', this);
       t = t.replace(/\xff\xfb\xc9/, '');
     }
+
+    // Add debug logging for control characters
+    // const chars = Array.from(t.substring(0, 10)).map((char) => ({
+    //   char: char,
+    //   code: char.charCodeAt(0),
+    //   hex: char.charCodeAt(0).toString(16),
+    // }));
+    // log('incoming data characters:', chars[0]);
 
     if (t.includes('\xff\xfaE')) {
       const m = t.match(/\xff\xfaE([^]+?)\xff\xf0/gm);
