@@ -12,8 +12,6 @@ window.jQuery = window.$ = jQuery;
 document.addEventListener('DOMContentLoaded', () => {
   initializeCore();
 
-  console.log(Config);
-
   if (Config.chatterbox) {
     new ChatterBox({
       id: '#chat-window',
