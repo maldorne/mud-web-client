@@ -90,7 +90,7 @@ export class ScrollView {
 
   setupButtons() {
     this.win.addButton({
-      title: 'Reconnect.',
+      title: 'Reconnect',
       icon: 'fa-solid fa-rotate',
       click: () => {
         this.echo('Attempting to reconnect...');
@@ -99,7 +99,7 @@ export class ScrollView {
     });
 
     this.win.addButton({
-      title: 'Increase the font size.',
+      title: 'Increase the font size',
       icon: 'fa-solid fa-magnifying-glass-plus',
       click: (e) => {
         const output = j(`${this.id} .out`);
@@ -115,7 +115,7 @@ export class ScrollView {
     });
 
     this.win.addButton({
-      title: 'Decrease the font size.',
+      title: 'Decrease the font size',
       icon: 'fa-solid fa-magnifying-glass-minus',
       click: (e) => {
         const output = j(`${this.id} .out`);
@@ -131,7 +131,7 @@ export class ScrollView {
     });
 
     this.win.addButton({
-      title: 'Download a session log.',
+      title: 'Download a session log',
       icon: 'fa-solid fa-download',
       click: (e) => {
         const blob = new Blob([this.sesslog], {
@@ -147,7 +147,7 @@ export class ScrollView {
     });
 
     this.win.addButton({
-      title: 'Toggle a freezepane.',
+      title: 'Toggle a freezepane',
       icon: 'fa-solid fa-columns',
       click: (e) => this.toggleFreezepane(e),
     });
@@ -220,7 +220,7 @@ export class ScrollView {
 
     j(`${this.id} .input`).append(`
       <a class="kbutton multiline tip ${multilineId}" 
-         title="Send multi-line text." 
+         title="Send multi-line text" 
          style="height: 21px;position: relative;top: 1px;display: inline-block;padding: 0px 8px !important;;">
         <i class="fa-solid fa-align-justify"></i>
       </a>

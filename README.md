@@ -48,6 +48,7 @@ In `src/config.js` you can change the following options, among others:
 ```
 
 These are the default values used when the client does not receive specific parameters. You have to specify:
+
  * host: Your hostname ()`localhost` or `127.0.0.1` don't seem to work: [see conversation here](https://github.com/maldorne/mud-web-proxy/issues/5#issuecomment-866464161)).
  * port: The port where the mud is running. The mud, **not** the proxy.
  * proxy: The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.
@@ -56,12 +57,12 @@ After changing these values, you can rebuild the project with `npm run build` an
 
 ## Usage
 
-* If you make changes (even only the `config.js` file), you can run `npm run build` to generate the new files in the `/dist` directory.
-* Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
-* Point a browser at the root of that directory to load the included `index.html` file.
+  * If you make changes (even only the `config.js` file), you can run `npm run build` to generate the new files in the `/dist` directory.
+  * Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
+  * Point a browser at the root of that directory to load the included `index.html` file.
 
 ## Changelog
 
-* v1 ([@plamzi](https://github.com/plamzi)): Original version [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App).
-* v2 ([@neverbot](https://github.com/neverbot)): Added support for `wss://` connections. Separated the client and [proxy-server code](https://github.com/maldorne/mud-web-proxy).
-* v3 ([@neverbot](https://github.com/neverbot)): Ported to ES modules and Vite. Updated all dependencies. 
+  * v1 ([@plamzi](https://github.com/plamzi)): Original version [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App).
+  * v2 ([@neverbot](https://github.com/neverbot)): Added support for `wss://` connections. Separated the client and [proxy-server code](https://github.com/maldorne/mud-web-proxy).
+  * v3 ([@neverbot](https://github.com/neverbot)): Ported to ES modules and Vite. Updated all dependencies. 

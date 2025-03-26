@@ -1,6 +1,7 @@
 /* body { height: auto; width: 99%; font-size: 11px; background: #000000 url(../images/dark-metal.jpg) 50% 50% repeat; } */
 
 @import url("./fonts.css");
+@import url("./chat.css");
 
 body {
 	outline: 0 none !important;
@@ -475,21 +476,34 @@ button.disabled {
 }
 
 .modal {
-    left: 50%;
-    margin-left: -280px;
-    outline: 0 none;
-    position: fixed;
-    top: 15%;
-    width: 500px;
-    z-index: 1051;
+  left: 50%;
+  margin-left: -280px;
+  outline: 0 none;
+  position: fixed;
+  top: 15%;
+  width: 500px;
+  z-index: 1051;
 }
 
 .modal, .modal-footer, .dropdown-menu {
-    /* background-color: rgba(0, 0, 0, 0.7);
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(255, 255, 255, 0.3) !important; */
+  background-color: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(255, 255, 255, 0.3) !important;
+  padding: 3px 5px;
 }
+
+.modal, .modal-footer, .dropdown-menu li {
+  margin: 0px;
+}
+
+.modal, .modal-footer, .dropdown-menu li a {
+  padding: 0px;
+} 
+
+.modal, .modal-footer, .dropdown-menu .dropdown-item {
+  color: #ccc;
+} 
 
 .modal ul {
 	white-space: nowrap;	
@@ -548,14 +562,21 @@ button.disabled {
 	pointer-events: none;
 }
 
+.tooltip-inner {
+  padding: 0;
+}
+
 .ui-tooltip {
-  padding: 8px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
   border-radius: 4px;
   font-size: 12px;
   max-width: 300px;
+  width: fit-content;
   z-index: 9999;
+  padding: 3px 8px;
+
+  /* padding: 3px 8px; */
 }
 
 .app .ui-icon-gripsmall-diagonal-se {
@@ -677,10 +698,10 @@ p:focus, ul:focus, div:focus {
 .app .tooltip, .app .ui-tooltip {
   border: 0.5px solid rgba(233, 193, 72, 0.6) !important;
   box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 193, 72, 0.6) !important;
-	padding: 3px;
+	/* padding: 3px 8px; */
 	font-size: 13px;
 	font-family: "Open Sans","Lucida Console",Arial,Helvetica,sans-serif;
-	color: "FloralWhite";
+	/* color: "#eee"; */
 }
 
 .app .game-thumb {
@@ -707,15 +728,18 @@ p:focus, ul:focus, div:focus {
 }
 
 .app .nav-tabs { 
-    padding: 0px; 
-    padding: 0px; 
-    margin: 0px; 
+    padding: 0 0 10px 0; 
+    margin: 0;
     border-bottom-color: #444;
 }
 
 .app .nav-tab { padding-left: 4px; }
 
-.app .chat-window .time {
+.app #chat-window .tab-content {
+	height: 85% !important;
+}
+
+.app #chat-window .time {
 	position: relative;
 }
 

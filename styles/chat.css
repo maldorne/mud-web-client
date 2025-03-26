@@ -1,0 +1,42 @@
+/* Chat window tab styling */
+.ChatterBox .nav-tabs {
+  border-bottom: none;
+  padding: 5px 5px 0 5px;
+}
+
+.ChatterBox .nav-tabs a {
+  color: #868686;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 5px 10px;
+  margin-right: 2px;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.ChatterBox .nav-tabs a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #cacaca;
+}
+
+.ChatterBox .nav-tabs a.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #cacaca;
+  font-weight: bold;
+}
+
+/* Add a subtle indicator for unread messages */
+.ChatterBox .nav-tabs a:not(.active)[data-unread]::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #4a9eff;
+  border-radius: 50%;
+  margin-left: 5px;
+  vertical-align: middle;
+}

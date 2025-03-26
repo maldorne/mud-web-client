@@ -1,6 +1,7 @@
 import jQuery from 'jquery';
 // to use draggable
 import 'jquery-ui-dist/jquery-ui';
+import { Tab } from 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import { Config } from './config.js';
 import { Event } from './event.js';
@@ -123,7 +124,7 @@ export class Window {
     if (this.options.closeable) {
       this.addButton({
         icon: 'fa-solid fa-xmark',
-        title: 'Close this window.',
+        title: 'Close this window',
         click: () => {
           if (this.options.onClose) this.options.onClose();
           Event.fire('window_close', j(this.id));
@@ -148,6 +149,14 @@ export class Window {
         <i class="${options.icon}"></i>
       </a>
     `);
+
+    // Initialize Bootstrap tooltip with custom options
+    j(`${this.id} .${buttonId}`).tooltip({
+      container: 'body',
+      placement: 'bottom',
+      trigger: 'hover',
+    });
+
     j(`${this.id} .${buttonId}`).click(options.click);
   }
 
@@ -193,7 +202,7 @@ export class Window {
     j(this.id).css(this.options.css);
 
     if (j(`${this.id} .handle`).length) {
-      j(`${this.id} .content`).height(j(this.id).height() - 18);
+      j(`${this.id} .content`).height(j(this.id).height() - 28);
     }
   }
 
@@ -440,15 +449,19 @@ export class Window {
 
   createTab(tab, index) {
     const tabHtml = `
-      <li>
-        <a class="kbutton ${tab.id ? tab.id.replace('#', '') : ''}" 
-           data-toggle="tab" 
-           href="#tab-${index}">
-          ${tab.name}
-        </a>
-      </li>
-    `;
+    <li>
+      <a class="kbutton ${tab.id ? tab.id.replace('#', '') : ''}" 
+         data-bs-toggle="tab" 
+         href="#tab-${index}"
+         role="tab"
+         aria-controls="tab-${index}"
+         aria-selected="${index === 0 ? 'true' : 'false'}">
+        ${tab.name}
+      </a>
+    </li>
+  `;
 
+    // Add tab navigation
     if (!tab.after && !tab.before) {
       j(`${this.id} .nav-tabs`).append(tabHtml);
     } else if (tab.before) {
@@ -461,20 +474,62 @@ export class Window {
       );
     }
 
+    // Add tab content
     j(`${this.options.id} .tab-content`).append(`
-      <div id="tab-${index}" 
-           class="${tab.class || ''} tab-pane${index === 0 ? ' active' : ''}">
-        ${tab.html || ''}
-      </div>
-    `);
+    <div class="tab-pane fade ${index === 0 ? 'show active' : ''} ${tab.class || ''}" 
+         id="tab-${index}"
+         role="tabpanel"
+         aria-labelledby="tab-${index}-tab">
+      ${tab.html || ''}
+    </div>
+  `);
 
-    if (tab.scroll) {
-      const $tab = j(`${this.options.id} #tab-${index}`);
-      $tab.addClass('nice').niceScroll({
-        cursorborder: 'none',
-        height: $tab.height(),
+    // Initialize tab functionality
+    const tabElement = document.querySelector(
+      `${this.id} a[href="#tab-${index}"]`,
+    );
+    if (tabElement) {
+      const bsTab = new Tab(tabElement);
+      tabElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        bsTab.show();
       });
     }
+
+    if (tab.scroll) {
+      const tabContent = j(`${this.options.id} #tab-${index} .content`);
+      // Set CSS properties before niceScroll initialization
+      tabContent.css({
+        height: 'inherit',
+        overflow: 'hidden',
+        position: 'relative', // Ensure proper positioning for niceScroll
+        padding: '0 10px 10px 10px',
+      });
+
+      // Initialize niceScroll with specific settings
+      tabContent.addClass('nice').niceScroll({
+        cursorborder: 'none',
+        preservenativescrolling: false,
+        overflowx: false,
+        // Force height calculation based on parent
+        railoffset: { top: 0, right: 0 },
+        bouncescroll: false,
+      });
+
+      // Ensure height is maintained after niceScroll initialization
+      const resizeObserver = new ResizeObserver(() => {
+        tabContent.css('height', 'inherit');
+        tabContent.getNiceScroll().resize();
+      });
+
+      resizeObserver.observe(tabContent[0]);
+    }
+
+    // let content = j(`${this.options.id} .content`);
+    // content.addClass('nice').niceScroll({
+    //   cursorborder: 'none',
+    // });
+    // content.css({ height: 'inherit' });
   }
 
   dock(options) {

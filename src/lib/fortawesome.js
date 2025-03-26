@@ -8,6 +8,8 @@ import {
   faColumns,
   faAlignJustify,
   faXmark,
+  faComments,
+  faCaretDown,
 } from '@fortawesome/free-solid-svg-icons';
 
 // Add icons to the library
@@ -19,6 +21,8 @@ library.add(
   faColumns,
   faAlignJustify,
   faXmark,
+  faComments,
+  faCaretDown,
 );
 
 // Initialize Font Awesome DOM watching

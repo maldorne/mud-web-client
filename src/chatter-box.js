@@ -7,203 +7,333 @@
  * See Bedlam-ChatterBox-Init.js for example use.
  */
 
-var ChatterBox = function (o) {
-  var self = this;
+import { Config } from './config.js';
+import { Event } from './event.js';
+import { Window } from './window.js';
+import { log, stringify } from './utils.js';
+import jQuery from 'jquery';
+import {
+  Dropdown,
+  Tooltip,
+  Tab,
+} from 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-  o = o || {
-    id: '#chat-window',
-    title: 'ChatterBox',
-    tabs: [],
-  };
+const j = jQuery;
 
-  o.css = o.css || {
-    width: 400,
-    height: 400,
-    top: 0,
-    left: Config.width,
-  };
+export class ChatterBox {
+  constructor(options = {}) {
+    this.options = {
+      id: '#chat-window',
+      title: 'ChatterBox',
+      tabs: [],
+      css: {
+        width: 400,
+        height: 400,
+        top: 0,
+        left: Config.width,
+      },
+      ...options,
+    };
 
-  if (Config.kong) {
-    o.css.width = 398;
-    o.css.height = j(window).height() - 143;
-  }
-
-  /* Create a window that doesn't fade when other windows are selected (nofade) */
-  var win = new Window({
-    id: o.id,
-    title: o.title,
-    class: 'nofade ui-group ChatterBox',
-    css: o.css || null,
-    handle: '.nav-tabs',
-  });
-
-  var tab = function (t) {
-    var i = o.tabs.length;
-    o.tabs.push(t);
-
-    return win.tab(t);
-  };
-
-  /* Build the tabs from the options. See Bedlam-ChatterBox.js */
-  for (var i = 0; i < o.tabs.length; i++) {
-    var t = o.tabs[i];
-
-    if (t.channels) {
-      t.html = t.html || '<div class="content"></div>';
-      t.html +=
-        '<div class="footer dropup" style="position: absolute; bottom: 0px; height: 34px">\
-				<a href="#" class="channel dropdown-toggle kbutton" data-toggle="dropdown" style="margin: 0px; width: 140px; position: relative; top: -2px"><span class="text">' +
-        t.channels[0] +
-        '</span> <i class="icon icon-caret-down"></i></a>\
-				<ul class="dropdown-menu" role="menu">';
-      for (var i = 0; i < t.channels.length; i++)
-        t.html +=
-          '<li><a href="#" data="' +
-          t.channels[i] +
-          '">' +
-          t.channels[i] +
-          '</a></li>';
-      t.html +=
-        '</ul><input class="send" type="text" style="margin-left: 6px; margin-top: 2px; width: 260px" placeholder="type your chat message"></div>';
+    if (Config.kong) {
+      this.options.css.width = 398;
+      this.options.css.height = j(window).height() - 143;
     }
 
-    if (!t.target) {
-      var target = win.tab(t);
+    this.win = new Window({
+      id: this.options.id,
+      title: this.options.title,
+      class: 'nofade ui-group ChatterBox',
+      css: this.options.css || null,
+      handle: '.nav-tabs',
+    });
 
-      if (t.channels) {
-        j(target + ' .content')
-          .addClass('nice')
-          .niceScroll({
-            cursorborder: 'none',
-          });
+    // Add an icon to the ScrollView window to hide/show the chat box
+    if (Config.ScrollView)
+      Config.ScrollView.win.addButton({
+        icon: 'fa-solid fa-comments',
+        title: 'Hide / show the communication tabs',
+        click: () => {
+          j(this.options.id).toggle();
+        },
+      });
 
-        j(target).on('click', 'ul a', function (e) {
-          j(target + ' .dropdown-toggle .text').html(j(this).attr('data'));
+    this.initializeTabs();
+    this.createChannelsDropdown(
+      this.options.tabs
+        .filter((tab) => tab.channels)
+        .flatMap((tab) => tab.channels),
+    );
+    this.setupChannelEvents();
+    this.setupEventListeners();
+    this.exposeToConfig();
+  }
 
-          try {
-            j(target + ' .dropdown-toggle').dropdown('toggle');
-          } catch (ex) {}
+  initializeTabs() {
+    for (const tabConfig of this.options.tabs) {
+      if (tabConfig.channels) {
+        tabConfig.html = tabConfig.html || '<div class="content"></div>';
+      }
 
-          e.stopPropagation();
-          e.preventDefault();
-        });
+      if (!tabConfig.target) {
+        this.win.addTab(tabConfig);
+      }
 
-        j(target).on('keydown', 'input', function (e) {
-          if (e.which == 13 && j(this).val().length) {
-            var prefix = j(target + ' .dropdown-toggle .text').text();
-            Config.Socket.write(prefix + ' ' + j(this).val());
-            j(this).val('');
+      if (tabConfig.match) {
+        try {
+          tabConfig.re = new RegExp(tabConfig.match, 'gi');
+        } catch (ex) {
+          log(ex);
+        }
+      }
+    }
 
-            e.stopPropagation();
+    // let content = j(`${this.options.id} .content`);
+    // content.addClass('nice').niceScroll({
+    //   cursorborder: 'none',
+    // });
+    // content.css({ height: 'inherit' });
+  }
+
+  createChannelsDropdown(channels) {
+    const channelsList = channels
+      .map(
+        (channel) =>
+          `<li><a class="dropdown-item" href="#" data="${channel}">${channel}</a></li>`,
+      )
+      .join('');
+
+    // there is no need to add the icon after the link, bootstrap dropdown
+    // will add it automatically
+    // <i class="fa-solid fa-caret-down"></i>
+    let footer = `
+      <div class="footer dropup" style="height: 30px">
+        <div class="dropdown"
+             data-toggle="tooltip"
+             title="Select chat channel"
+             style="float: left;">
+          <a id="dropdownMenuButtonChat" href="#" 
+             class="channel dropdown-toggle kbutton"
+             data-bs-toggle="dropdown"
+             aria-expanded="false"
+             style="margin: 0 0 0 5px;position: relative;top: 0px;display: inline-block;height: 22px;padding: 0 10px !important;">
+            <span class="text">${channels[0]}</span>
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonChat">
+            ${channelsList}
+          </ul>
+        </div>
+        <input class="send" type="text"
+               style="margin-left: 6px; margin-top: 2px; width: 260px"
+               placeholder="type your chat message">
+      </div>`;
+
+    // add the footer after tab-content
+    const target = this.options.id;
+    const tabContent = j(`${target} .tab-content`);
+    if (tabContent.length) {
+      tabContent.after(footer); // Changed from append() to after()
+    } else {
+      j(target).append(footer);
+    }
+  }
+
+  // setupTargetTab(tabConfig) {
+  // }
+
+  setupChannelEvents() {
+    const target = this.options.id;
+
+    // Initialize the dropdown after adding to DOM
+    const tooltipToggle = document.querySelector(`${target} .dropdown`);
+    if (tooltipToggle) {
+      // Create new Bootstrap Dropdown instance with configuration
+      new Tooltip(tooltipToggle, {
+        container: 'body',
+        trigger: 'hover',
+        boundary: 'window',
+        placement: 'top',
+        title: 'Select chat channel',
+        customClass: 'ui-tooltip',
+      });
+    }
+
+    // Initialize the dropdown after adding to DOM
+    const dropdownToggle = document.querySelector(
+      `${target} .dropdown-toggle`,
+    );
+    if (dropdownToggle) {
+      // Create new Bootstrap Dropdown instance with configuration
+      const dropdown = new Dropdown(dropdownToggle, {
+        autoClose: true,
+        display: 'dynamic',
+      });
+
+      // Add manual toggle handler
+      dropdownToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdown.toggle();
+      });
+
+      // Debug events
+      // [
+      //   'show.bs.dropdown',
+      //   'shown.bs.dropdown',
+      //   'hide.bs.dropdown',
+      //   'hidden.bs.dropdown',
+      // ].forEach((event) => {
+      //   dropdownToggle.addEventListener(event, (e) => {
+      //     console.log(event, e);
+      //   });
+      // });
+
+      // Add click handlers for menu items
+      const menu = dropdownToggle.nextElementSibling;
+      if (menu) {
+        menu.addEventListener('click', (e) => {
+          if (e.target.classList.contains('dropdown-item')) {
             e.preventDefault();
+            const text = e.target.getAttribute('data');
+            dropdownToggle.querySelector('.text').textContent = text;
+            dropdown.hide();
           }
         });
       }
     }
 
-    if (t.match) {
-      try {
-        t.re = new RegExp(t.match, 'gi');
-        //log(o.tabs[i].re);
-      } catch (ex) {
-        log(ex);
+    j(target).on('keydown', 'input', (e) => {
+      if (e.which === 13 && j(e.currentTarget).val().length) {
+        const prefix = j(`${target} .dropdown-toggle .text`).text();
+        Config.Socket.write(`${prefix} ${j(e.currentTarget).val()}`);
+        j(e.currentTarget).val('');
+
+        // Find and activate the tab corresponding to the selected channel
+        const selectedChannel = prefix;
+        const tabIndex = this.options.tabs.findIndex(
+          (tab) => tab.channels && tab.channels.includes(selectedChannel),
+        );
+
+        if (tabIndex !== -1) {
+          // Get the tab element and show it using Bootstrap 5's Tab API
+          const tabElement = document.querySelector(
+            `${target} .nav-tabs a[href="#tab-${tabIndex}"]`,
+          );
+          if (tabElement) {
+            const tab = new Tab(tabElement);
+            tab.show();
+          }
+        }
+
+        e.stopPropagation();
+        e.preventDefault();
       }
-    }
+    });
   }
 
-  //j(o.id + ' .chat-tabs').sortable();
+  process(msg) {
+    // if msg is an empty string, return
+    if (!msg || msg.length === 0) return;
 
-  var process = function (msg) {
-    var src = msg;
-    //src = src.replace(/([\r\n]|<br>)/g,'');
+    let currentMsg = msg;
 
-    for (var i = 0; i < o.tabs.length; i++) {
-      if (!o.tabs[i].re) continue;
+    for (const tab of this.options.tabs) {
+      if (!tab.re) continue;
 
-      var match = src.match(o.tabs[i].re);
+      // const match = currentMsg.match(tab.re);
+      // Use matchAll instead of match to get all occurrences
+      const matches = [...currentMsg.matchAll(tab.re)];
 
-      if (match && match.length) {
-        log(stringify(match) + ' chan ' + o.tabs[i].name);
-        var text = match[0];
+      for (const match of matches) {
+        if (match?.length) {
+          let text = match[0];
 
-        if (o.tabs[i].replace)
-          text = match[0].replace(o.tabs[i].re, o.tabs[i].replace, 'gi');
+          if (tab.replace) {
+            text = match[0].replace(tab.re, tab.replace, 'gi');
+          }
 
-        if (o.tabs[i].time)
-          text =
-            '<span style="color: DarkGray; opacity: 0.6">' +
-            j.format.date(new Date(), 'HH:mm') +
-            '</span> ' +
-            text;
+          // Start building the HTML content
+          let htmlContent = '<div id="c"><span>';
 
-        text = text.replace(
-          /([^"'])(http?:\/\/[^\s\x1b"']+)/g,
-          '$1<a href="$2" target="_blank">$2</a>',
-        );
-        text = '<div id="c">' + text + '</div>';
+          if (tab.time) {
+            const time = new Date().toLocaleTimeString('en-US', {
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            htmlContent += `<span style="color: DarkGray; opacity: 0.6">${time}</span> `;
+          }
 
-        if (o.tabs[i].target) {
-          var t;
+          // Add the main text content
+          htmlContent += text;
 
-          if ((t = o.tabs.index('name', o.tabs[i].target)) > -1)
-            var target = j(o.id + ' #tab-' + t + ' .content').length
-              ? j(o.id + ' #tab-' + t + ' .content')
-              : j(o.id + ' #tab-' + t);
-        } else
-          var target = j(o.id + ' #tab-' + i + ' .content').length
-            ? j(o.id + ' #tab-' + i + ' .content')
-            : j(o.id + ' #tab-' + t);
-
-        target.append(text);
-        target.scrollTop(target[0].scrollHeight);
-
-        /* we're hiding the output so triggers can still work */
-        if (o.tabs[i].gag) {
-          let code = String.fromCharCode(parseInt('033', 8));
-          msg = msg.replace(
-            match[0],
-            code +
-              '<span style="display: none"' +
-              code +
-              '>' +
-              match[0] +
-              code +
-              '</span' +
-              code +
-              '>',
+          // Process URLs in the text
+          htmlContent = htmlContent.replace(
+            /([^"'])(http?:\/\/[^\s\x1b"']+)/g,
+            '$1<a href="$2" target="_blank">$2</a>',
           );
+
+          // Close the spans and div
+          htmlContent += '</span></div>';
+
+          const targetEl = this.getTargetElement(tab);
+          targetEl.append(htmlContent);
+
+          // Update scroll position
+          targetEl[0].scrollTop = targetEl[0].scrollHeight;
+
+          if (tab.gag) {
+            currentMsg = this.handleGag(currentMsg, match[0]);
+          }
         }
       }
     }
 
-    return msg;
-  };
+    return currentMsg;
+  }
 
-  /* Add an icon to the ScrollView window to hide/show the chat box 
-    if (Config.ScrollView)
-    	Config.ScrollView.win.button({
-	        icon: 'icon-comment-alt',
-	        title: 'Hide / show the communication tabs.',
-	        click: function() {
-	            j(o.id).toggle();
-	        }
-	    });*/
+  getTargetElement(tab) {
+    if (tab.target) {
+      const targetIndex = this.options.tabs.findIndex(
+        (t) => t.name === tab.target,
+      );
+      if (targetIndex > -1) {
+        return this.getContentElement(targetIndex);
+      }
+    }
+    const index = this.options.tabs.indexOf(tab);
+    return this.getContentElement(index);
+  }
 
-  /* We queue up after protocols and colorize so we would get input that's closest to what we want. */
-  Event.listen('before_display', process);
+  getContentElement(index) {
+    const selector = `${this.options.id} #tab-${index}`;
+    return j(`${selector} .content`).length
+      ? j(`${selector} .content`)
+      : j(selector);
+  }
 
-  /* Expose public methods */
-  var self = {
-    process: process,
-    tab: tab,
-    win: win,
-  };
+  handleGag(msg, matchText) {
+    const code = String.fromCharCode(parseInt('033', 8));
+    return msg.replace(
+      matchText,
+      `${code}<span style="display: none"${code}>${matchText}${code}</span${code}>`,
+    );
+  }
 
-  Config.ChatterBox = self;
+  setupEventListeners() {
+    Event.listen('before_display', (msg) => this.process(msg));
+  }
 
-  setTimeout(function () {
-    Event.fire('chatterbox_ready', self);
-  }, 500);
+  exposeToConfig() {
+    Config.ChatterBox = this;
+    setTimeout(() => {
+      Event.fire('chatterbox_ready', this);
+    }, 500);
+  }
 
-  return self;
-};
+  // tab(t) {
+  //   const i = this.options.tabs.length;
+  //   this.options.tabs.push(t);
+  //   return this.win.tab(t);
+  // }
+}
