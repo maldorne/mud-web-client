@@ -82,12 +82,16 @@ export class Colorize {
       text = text.replace(/(\033\[.*?)3([0-9])(.*?m)\033\[7m/g, '$14$2$3');
     }
 
-    text = text.replace(/\033\[[0;]+m/g, '</span>');
+    // Wrap the entire text in a span to start
+    text = '<span>' + text;
+
+    // Handle resets with proper span closure and opening
+    text = text.replace(/\033\[[0;]+m/g, '</span><span>');
 
     const matches = text.match(
       /(\033\[[0-9;]+m\033\[[0-9;]+m|\033\[[0-9;]+m)/g,
     );
-    if (!matches) return text;
+    if (!matches) return text + '</span>'; // Close the initial span if no matches
 
     const uniqueMatches = [...new Set(matches)].sort(
       (a, b) => b.length - a.length,
@@ -125,11 +129,11 @@ export class Colorize {
         }
       });
 
-      let replacement = '';
-      if (codes.includes('0') || color || bgcolor) replacement += '</span>';
+      let replacement = '</span><span';
       if (color || bgcolor || bold || italic) {
-        replacement += `<span style="${color}${bgcolor}${bold}${italic}">`;
+        replacement += ` style="${color}${bgcolor}${bold}${italic}"`;
       }
+      replacement += '>';
 
       const regex = new RegExp(match.replace(/\[/g, '\\['), 'g');
       text = text.replace(regex, replacement);
@@ -142,14 +146,21 @@ export class Colorize {
     });
 
     // Clean up remaining escape sequences
-    return text
+    text = text
       .replace(/\033\[[0-9;]+?m/g, '')
       .replace(/\033\[2J/g, '')
       .replace(/\033\[0c/g, '');
+
+    // Clean up empty spans and close any remaining span
+    return (
+      text.replace(/<span><\/span>/g, '').replace(/<span>\s*<\/span>/g, '') +
+      '</span>'
+    );
   }
 
   process = (text) => {
     if (!text.includes('\u001b')) return text;
+    console.log('Processing text with ANSI codes:', text, this.colorize(text));
     return this.colorize(text);
   };
 }
