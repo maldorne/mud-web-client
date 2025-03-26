@@ -12,7 +12,9 @@ window.jQuery = window.$ = jQuery;
 document.addEventListener('DOMContentLoaded', () => {
   initializeCore();
 
-  if (Config.chatterBox) {
+  console.log(Config);
+
+  if (Config.chatterbox) {
     new ChatterBox({
       id: '#chat-window',
       title: 'ChatterBox',

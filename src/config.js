@@ -55,7 +55,7 @@ export const Config = {
   // MU* protocol (text channel, json channel, etc)
   useMuProtocol: param('useMuProtocol') || 0,
 
-  chatterBox: param('chatterBox') || 1,
+  chatterbox: param('chatterbox') || 0,
 
   device: {
     touch: 'ontouchstart' in window,
