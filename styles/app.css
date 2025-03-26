@@ -728,7 +728,7 @@ p:focus, ul:focus, div:focus {
 }
 
 .app .nav-tabs { 
-    padding: 0 0 10px 0; 
+    padding: 0; 
     margin: 0;
     border-bottom-color: #444;
 }

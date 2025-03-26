@@ -152,7 +152,7 @@ export class ChatterBox {
         container: 'body',
         trigger: 'hover',
         boundary: 'window',
-        placement: 'top',
+        placement: 'bottom',
         title: 'Select chat channel',
         customClass: 'ui-tooltip',
       });
