@@ -35,29 +35,46 @@ git clone https://github.com/maldorne/mud-web-client
 npm install
 ```
 
-In `src/config.js` you can change the following options, among others:
+### MUD Configuration Files
 
-``` javascript
-  debug: param('debug') || 0,
-  host: param('host') || 'muds.maldorne.org',
-  port: param('port') || '5010',
-  name: param('name') || 'House of Maldorne',
-  ...
-  proxy: 'wss://play.maldorne.org:6200/',
-  ...
+The client now supports JSON configuration files for different MUDs. Create a file in the `muds/` directory for each MUD you want to configure:
+
+```json
+{
+  "name": "Example MUD",
+  "host": "muds.example.org",
+  "port": "5010",
+  "proxy": "wss://play.example.org:6200/",
+  // ... other configuration options, see muds/example.json or muds/ciudad-capital.json for more examples
+}
 ```
 
-These are the default values used when the client does not receive specific parameters. You have to specify:
+Key configuration options:
+  - `name`: Display name of the MUD.
+  - `host`: MUD server hostname.
+  - `port`: MUD server port, The mud, **not** the proxy.
+  - `proxy`: WebSocket proxy URL. The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.
 
- * host: Your hostname ()`localhost` or `127.0.0.1` don't seem to work: [see conversation here](https://github.com/maldorne/mud-web-proxy/issues/5#issuecomment-866464161)).
- * port: The port where the mud is running. The mud, **not** the proxy.
- * proxy: The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.
+To use a specific MUD configuration, add the `mud` parameter to the URL:
 
-After changing these values, you can rebuild the project with `npm run build` and copy the files in the `/dist` directory to your web server, as it is explained below.
+`http://localhost:5173/?mud=example-mud`
+
+URL parameters will override values from the JSON config file. For example:
+
+`http://localhost:5173/?mud=example-mud&debug=1&chatterbox=1`
+
+After changing configuration values, you can rebuild the project with `npm run build` and copy the files in the `/dist` directory to your web server, as it is explained below.
+
+### Default Configuration
+
+The values in `src/config.js` are now used as fallbacks when:
+  - No MUD is specified in the URL
+  - A specified MUD configuration file is not found
+  - Specific fields are missing in the MUD configuration
 
 ## Usage
 
-  * If you make changes (even only the `config.js` file), you can run `npm run build` to generate the new files in the `/dist` directory.
+  * If you make changes (even only in a json configuration file), you can run `npm run build` to generate the new files in the `/dist` directory.
   * Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
   * Point a browser at the root of that directory to load the included `index.html` file.
 
