@@ -45,7 +45,8 @@ The client now supports JSON configuration files for different MUDs. Create a fi
   "host": "muds.example.org",
   "port": "5010",
   "proxy": "wss://play.example.org:6200/",
-  // ... other configuration options, see muds/example.json or muds/ciudad-capital.json for more examples
+
+  "other configuration options, see muds/example.json or muds/ciudad-capital.json for more examples"
 }
 ```
 
