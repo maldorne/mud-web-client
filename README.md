@@ -81,7 +81,7 @@ The values in `src/config.js` are now used as fallbacks when:
 
 ### For deployment on a web server
 
-  * If you make changes (even only in a json configuration file), you can run `npm run build` to generate the new files in the `/dist` directory.
+  * If you make changes (even only in a JSON configuration file), you can run `npm run build` to generate the new files in the `/dist` directory.
   * Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
   * Point a browser at the root of that directory to load the included `index.html` file.
 
