@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 /*
  * ChatterBox plugin - v1.1 - 09/25/2014
  * Always included on the app page (this code is just for easy viewing)
@@ -7,10 +8,10 @@
  * See Bedlam-ChatterBox-Init.js for example use.
  */
 
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { Window } from './window.js';
-import { log, stringify } from './utils.js';
+import { log } from './utils.js';
 import jQuery from 'jquery';
 import {
   Dropdown,
@@ -23,19 +24,22 @@ const j = jQuery;
 export class ChatterBox {
   constructor(options = {}) {
     this.options = {
-      id: '#chat-window',
+      // default values
       title: 'ChatterBox',
-      tabs: [],
       css: {
         width: 400,
         height: 400,
         top: 0,
-        left: Config.width,
+        left: config.width,
       },
+      // mud configuration values
+      ...config.chatterboxConfig,
       ...options,
+      // this is always the same
+      id: '#chat-window',
     };
 
-    if (Config.kong) {
+    if (config.kong) {
       this.options.css.width = 398;
       this.options.css.height = j(window).height() - 143;
     }
@@ -49,8 +53,8 @@ export class ChatterBox {
     });
 
     // Add an icon to the ScrollView window to hide/show the chat box
-    if (Config.ScrollView)
-      Config.ScrollView.win.addButton({
+    if (config.ScrollView)
+      config.ScrollView.win.addButton({
         icon: 'fa-solid fa-comments',
         title: 'Hide / show the communication tabs',
         click: () => {
@@ -205,7 +209,7 @@ export class ChatterBox {
     j(target).on('keydown', 'input', (e) => {
       if (e.which === 13 && j(e.currentTarget).val().length) {
         const prefix = j(`${target} .dropdown-toggle .text`).text();
-        Config.Socket.write(`${prefix} ${j(e.currentTarget).val()}`);
+        config.Socket.write(`${prefix} ${j(e.currentTarget).val()}`);
         j(e.currentTarget).val('');
 
         // Find and activate the tab corresponding to the selected channel
@@ -325,7 +329,7 @@ export class ChatterBox {
   }
 
   exposeToConfig() {
-    Config.ChatterBox = this;
+    config.ChatterBox = this;
     setTimeout(() => {
       Event.fire('chatterbox_ready', this);
     }, 500);

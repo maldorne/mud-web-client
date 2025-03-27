@@ -1,0 +1,51 @@
+{
+  "name": "Example MUD",
+  "host": "mud.example.com",
+  "port": "5000",
+  "proxy": "wss://proxy.example.com:6200/",
+  "debug": 0,
+  "width": 800,
+  "height": 600,
+  "top": 0,
+  "left": 0,
+  "clean": false,
+  "solo": false,
+  "nocenter": false,
+  "notrack": 0,
+  "nodrag": 0,
+  "embed": 0,
+  "separator": ";",
+  "uncompressed": 0,
+  "useMuProtocol": 0,
+  "chatterbox": 1,
+  "chatterboxConfig": {
+    "title": "Communications",
+    "css": {
+      "width": 400,
+      "height": 400,
+      "top": 0,
+      "left": 800
+    },
+    "tabs": [
+      {
+        "name": "All",
+        "html": "<div class='content'></div>",
+        "match": ".*"
+      },
+      {
+        "name": "Chat",
+        "html": "<div class='content'></div>",
+        "match": "^(\\w+) (says|tells you) '([^']+)'$",
+        "replace": "<span style='color:cyan'>$1</span> $2 '$3'",
+        "time": true,
+        "channels": ["say", "tell"]
+      },
+      {
+        "name": "Combat",
+        "html": "<div class='content'></div>",
+        "match": "(hits|misses|dodges|parries|blocks)",
+        "time": true
+      }
+    ]
+  }
+}

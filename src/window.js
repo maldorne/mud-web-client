@@ -3,7 +3,7 @@ import jQuery from 'jquery';
 import 'jquery-ui-dist/jquery-ui';
 import { Tab } from 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { log, stringify, param } from './utils.js';
 
@@ -22,7 +22,7 @@ export class Window {
     };
 
     this.minZ = 100;
-    this.viewId = Config.view;
+    this.viewId = config.view;
     this.id = '';
     this.position = null;
     this.width = null;
@@ -31,20 +31,20 @@ export class Window {
     this.wasAt = null;
 
     this.drag =
-      !Config.device.mobile &&
+      !config.device.mobile &&
       !param('kong') &&
       !param('gui') &&
       !param('embed') &&
       !options.nodrag &&
-      !Config.nodrag;
+      !config.nodrag;
 
-    this.doResize = !options.noresize && !param('embed') && !Config.nodrag;
+    this.doResize = !options.noresize && !param('embed') && !config.nodrag;
 
     this.save =
       window.user &&
       window.user.id &&
-      Config.host &&
-      !Config.kong &&
+      config.host &&
+      !config.kong &&
       !param('gui') &&
       !param('embed');
 
@@ -53,7 +53,7 @@ export class Window {
     this.options.closeable = options.closeable ?? this.drag;
     this.options.tabs = options.tabs || [];
 
-    if (Config.device.touch || param('gui')) {
+    if (config.device.touch || param('gui')) {
       this.options.handle = '.none';
     }
 
@@ -77,7 +77,7 @@ export class Window {
     this.setupStyles();
     this.setupResizable();
     this.setupPosition();
-    this.setupTabs();
+    this.setupTabsStructure();
 
     this.bringToFront(false);
 
@@ -165,7 +165,7 @@ export class Window {
 
     this.setupDraggable();
 
-    if (Config.Toolbar) {
+    if (config.Toolbar) {
       j(`${this.id} .handle`).dblclick(() => this.hide());
     }
   }
@@ -293,7 +293,7 @@ export class Window {
   bringToFront(save = true) {
     if (j(this.id).hasClass('nofront')) return;
 
-    if (Config.front === this.id) {
+    if (config.front === this.id) {
       Event.fire('window_front', this.id);
       return;
     }
@@ -331,7 +331,7 @@ export class Window {
       j(item.id).css('z-index', this.minZ + index);
     });
 
-    Config.front = this.id;
+    config.front = this.id;
 
     log(`Window.front(ed): ${this.id}`);
     Event.fire('window_front', this.id);
@@ -424,17 +424,24 @@ export class Window {
     const index = this.options.tabs.length;
     this.options.tabs.push(tab);
 
+    // Check if tabs structure exists, if not create it
     if (!j(`${this.id} .content .tabs`).length) {
-      this.setupTabs();
+      this.setupTabsStructure();
     }
 
+    // Create the new tab
     this.createTab(tab, index);
+
+    // Initialize all tabs after DOM is updated
+    this.initializeTabs();
+
+    // Adjust sizes
     this.resize();
 
     return `${this.id} #tab-${index}`;
   }
 
-  setupTabs() {
+  setupTabsStructure() {
     j(`${this.id} .content`).prepend(`
       <ul class="tabs nav nav-tabs"></ul>
       <div class="tab-content"></div>
@@ -447,9 +454,53 @@ export class Window {
     this.setupDraggable();
   }
 
+  initializeTabs() {
+    // Get all tab elements
+    const tabElements = document.querySelectorAll(
+      `${this.id} [data-bs-toggle="tab"]`,
+    );
+
+    // Create a new Tab instance for each element
+    tabElements.forEach((tabElement) => {
+      // Create tab instance
+      const tab = new Tab(tabElement);
+
+      // Add click handler
+      tabElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Get target pane
+        const targetPane = document.querySelector(
+          tabElement.getAttribute('href'),
+        );
+        if (targetPane) {
+          // Remove active class from all panes
+          document.querySelectorAll(`${this.id} .tab-pane`).forEach((pane) => {
+            pane.classList.remove('active', 'show');
+          });
+          // Add active class to target pane
+          targetPane.classList.add('active', 'show');
+          // Remove active class from all tabs
+          tabElements.forEach((t) => t.classList.remove('active'));
+          // Add active class to clicked tab
+          tabElement.classList.add('active');
+        }
+      });
+    });
+
+    // Show first tab by default
+    const firstTab = tabElements[0];
+    if (firstTab) {
+      const targetPane = document.querySelector(firstTab.getAttribute('href'));
+      if (targetPane) {
+        targetPane.classList.add('active', 'show');
+        firstTab.classList.add('active');
+      }
+    }
+  }
+
   createTab(tab, index) {
     const tabHtml = `
-    <li>
+    <li class="nav-item">
       <a class="kbutton ${tab.id ? tab.id.replace('#', '') : ''}" 
          data-bs-toggle="tab" 
          href="#tab-${index}"
@@ -476,28 +527,16 @@ export class Window {
 
     // Add tab content
     j(`${this.options.id} .tab-content`).append(`
-    <div class="tab-pane fade ${index === 0 ? 'show active' : ''} ${tab.class || ''}" 
-         id="tab-${index}"
-         role="tabpanel"
-         aria-labelledby="tab-${index}-tab">
-      ${tab.html || ''}
-    </div>
-  `);
-
-    // Initialize tab functionality
-    const tabElement = document.querySelector(
-      `${this.id} a[href="#tab-${index}"]`,
-    );
-    if (tabElement) {
-      const bsTab = new Tab(tabElement);
-      tabElement.addEventListener('click', (e) => {
-        e.preventDefault();
-        bsTab.show();
-      });
-    }
+      <div class="tab-pane fade ${index === 0 ? 'show active' : ''} ${tab.class || ''}" 
+          id="tab-${index}"
+          role="tabpanel"
+          aria-labelledby="tab-${index}-tab">
+        ${tab.html || ''}
+      </div>`);
 
     if (tab.scroll) {
       const tabContent = j(`${this.options.id} #tab-${index} .content`);
+
       // Set CSS properties before niceScroll initialization
       tabContent.css({
         height: 'inherit',

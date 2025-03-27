@@ -4,7 +4,7 @@ import 'jquery-ui-dist/jquery-ui';
 import 'jquery.nicescroll';
 import './lib/fortawesome.js';
 
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { Window } from './window.js';
 import { Modal } from './modal.js';
@@ -20,10 +20,10 @@ export class ScrollView {
   constructor(options = {}) {
     this.options = {
       css: {
-        width: Config.width,
-        height: Config.height,
-        top: Config.top,
-        left: Config.left,
+        width: config.width,
+        height: config.height,
+        top: config.top,
+        left: config.left,
       },
       local: 1 /* local echo */,
       scrollback: 30 * 1000,
@@ -34,20 +34,20 @@ export class ScrollView {
     this.ws = {};
     this.sesslog = '';
     this.freeze = null;
-    this.mobile = Config.device.mobile;
-    this.touch = Config.device.touch;
+    this.mobile = config.device.mobile;
+    this.touch = config.device.touch;
     this.multi = null;
     this.cmds = [];
     this.cmdi = 0;
     // this.echo = true;
-    this.keepcom = Config.getSetting('keepcom') ?? true;
+    this.keepcom = config.getSetting('keepcom') ?? true;
 
-    if (Config.kong) {
+    if (config.kong) {
       this.options.css.height = j(window).height() - 3;
     }
 
     this.options.local =
-      Config.getSetting('echo') == null || Config.getSetting('echo') == true;
+      config.getSetting('echo') == null || config.getSetting('echo') == true;
     this.options.echo = this.options.echo || true;
 
     this.initializeWindow();
@@ -64,8 +64,8 @@ export class ScrollView {
       id: this.id,
       css: this.options.css,
       class: 'scroll-view nofade',
-      master: !Config.notrack,
-      closeable: Config.ControlPanel,
+      master: !config.notrack,
+      closeable: config.ControlPanel,
     });
 
     if (this.mobile) {
@@ -94,7 +94,7 @@ export class ScrollView {
       icon: 'fa-solid fa-rotate',
       click: () => {
         this.echo('Attempting to reconnect...');
-        Config.socket.reconnect();
+        config.socket.reconnect();
       },
     });
 
@@ -139,7 +139,7 @@ export class ScrollView {
         });
         saveAs(
           blob,
-          `log-${Config.host}-${new Date().toISOString().split('T')[0]}.txt`,
+          `log-${config.host}-${new Date().toISOString().split('T')[0]}.txt`,
         );
         e.stopPropagation();
         return false;
@@ -183,7 +183,7 @@ export class ScrollView {
   }
 
   setupContent() {
-    const spellcheck = Config.getSetting('spellcheck');
+    const spellcheck = config.getSetting('spellcheck');
 
     j(`${this.id} .tab-content`).append(`
       <div class="out nice"></div>
@@ -232,7 +232,7 @@ export class ScrollView {
 
   setupMultilineInput() {
     const handleMultiline = (e, text = '') => {
-      const spellcheck = Config.getSetting('spellcheck');
+      const spellcheck = config.getSetting('spellcheck');
 
       new Modal({
         title: 'Multi-Line Input',
@@ -250,7 +250,7 @@ export class ScrollView {
               messages.forEach((msg, index) => {
                 setTimeout(
                   () => {
-                    Config.Socket.write(msg);
+                    config.Socket.write(msg);
                     // this.echo(msg);
                   },
                   100 * (index + 1),
@@ -274,7 +274,7 @@ export class ScrollView {
   }
 
   setupAutocomplete() {
-    if (!Config.embed && !Config.kong) {
+    if (!config.embed && !config.kong) {
       j(`${this.id} .send`).autocomplete({
         appendTo: 'body',
         minLength: 2,
@@ -428,16 +428,16 @@ export class ScrollView {
 
   title(text) {
     this.win.setTitle(text);
-    document.title = text || Config.name;
+    document.title = text || config.name;
   }
 
   initializeSocket() {
-    this.title(Config.name || `${Config.host}:${Config.port}`);
+    this.title(config.name || `${config.host}:${config.port}`);
 
     this.ws = new Socket({
-      host: Config.host,
-      port: Config.port,
-      proxy: Config.proxy,
+      host: config.host,
+      port: config.port,
+      proxy: config.proxy,
       out: this,
     });
 
@@ -445,21 +445,21 @@ export class ScrollView {
       this.setupMacrosAndTriggers();
     }
 
-    Config.ScrollView = this;
+    config.ScrollView = this;
     Event.fire('scrollview_ready', null, this);
   }
 
   setupMacrosAndTriggers() {
-    Config.MacroPane = new MacroPane({ socket: this.ws });
-    Config.TriggerHappy = new TriggerHappy({ socket: this.ws });
+    config.MacroPane = new MacroPane({ socket: this.ws });
+    config.TriggerHappy = new TriggerHappy({ socket: this.ws });
 
-    if (!Config.nomacros) {
-      Event.listen('before_send', Config.MacroPane.sub);
+    if (!config.nomacros) {
+      Event.listen('before_send', config.MacroPane.sub);
       this.echo('Activating macros.');
     }
 
-    if (!Config.notriggers) {
-      Event.listen('after_display', Config.TriggerHappy.respond);
+    if (!config.notriggers) {
+      Event.listen('after_display', config.TriggerHappy.respond);
       this.echo('Activating triggers.');
     }
   }

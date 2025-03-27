@@ -1,4 +1,4 @@
-import { Config, MU_CHANNELS } from './config.js';
+import { config, MU_CHANNELS } from './config.js';
 import { Event } from './event.js';
 import { Colorize } from './colorize.js';
 import { log, stringify } from './utils.js';
@@ -20,9 +20,9 @@ export class Socket {
     };
 
     this.ws = {};
-    this.out = options.out || Config.ScrollView;
+    this.out = options.out || config.ScrollView;
     this.connected = false;
-    this.proxy = Config.proxy;
+    this.proxy = config.proxy;
     this.host = options.host;
     this.port = options.port;
     this.buffer = '';
@@ -36,7 +36,7 @@ export class Socket {
     this.commands = [];
     this.commandIndex = 0;
     this.echo = true;
-    this.keepCommand = Config.getSetting('keepcom') ?? true;
+    this.keepCommand = config.getSetting('keepcom') ?? true;
 
     if (this.proxy?.includes('maldorne')) {
       delete this.options.proxy;
@@ -46,7 +46,7 @@ export class Socket {
     this.initializeSocket();
 
     if (this.options.type === 'telnet') {
-      Config.socket = Config.Socket = this;
+      config.socket = config.Socket = this;
     }
   }
 
@@ -84,8 +84,8 @@ export class Socket {
           utf8: 1,
           mxp: 1,
           connect: 1,
-          mccp: Config.device.mobile ? 0 : 1,
-          debug: Config.debug,
+          mccp: config.device.mobile ? 0 : 1,
+          debug: config.debug,
           client: this.options.client,
           ttype: this.options.ttype,
           name: window.user?.username || 'Guest',
@@ -170,14 +170,14 @@ export class Socket {
       }
     }
 
-    if (Config.uncompressed) {
+    if (config.uncompressed) {
       // just pass the information, as it is not compressed
       this.buffer += data;
 
       return this.process();
     }
 
-    if (Config.base64) {
+    if (config.base64) {
       try {
         var bits = new Base64Reader(e.data);
         var translator = new Utf8Translator(bits);
@@ -253,16 +253,16 @@ export class Socket {
       !message.includes('macro') &&
       !message.includes('alias') &&
       !message.includes('trig') &&
-      Config.separator.length
+      config.separator.length
     ) {
-      const separator = new RegExp(Config.separator, 'g');
+      const separator = new RegExp(config.separator, 'g');
       message = message.replace(separator, '\r\n');
     }
 
     if (this.ws.send && this.connected) {
       this.out?.echo(message);
 
-      if (Config.useMuProtocol) {
+      if (config.useMuProtocol) {
         message = MU_CHANNELS.TEXT + message;
       }
 
@@ -332,7 +332,7 @@ export class Socket {
       return;
     }
 
-    if (Config.mxp?.enabled) {
+    if (config.mxp?.enabled) {
       const mxp = t.match(/\x1b\[[1-7]z/g);
 
       if (mxp && mxp.length % 2 && !force) {
@@ -367,7 +367,7 @@ export class Socket {
     t = Event.fire('before_process', t);
 
     // Add MU*-specific protocol detection
-    if (Config.useMuProtocol) {
+    if (config.useMuProtocol) {
       // normal text messages
       if (t.startsWith(MU_CHANNELS.TEXT)) {
         t = t.substring(MU_CHANNELS.TEXT.length);
@@ -463,26 +463,26 @@ export class Socket {
       }
     }
 
-    if (t.includes('\xff\xfb\x5b') && Config.base64) {
+    if (t.includes('\xff\xfb\x5b') && config.base64) {
       this.ws.send('\xff\xfd\x5b');
     }
 
     if (t.includes('\xff\xfb\x01')) {
       log('IAC WILL ECHO');
-      Config.ScrollView?.echoOff();
+      config.ScrollView?.echoOff();
       t = t.replace(/\xff.\x01/g, '');
     }
 
     if (t.includes('\xff\xfc\x01')) {
       log('IAC WONT ECHO');
-      Config.ScrollView?.echoOn();
+      config.ScrollView?.echoOn();
       t = t.replace(/\xff.\x01/g, '');
     }
 
     t = Event.fire('internal_mxp', t);
     t = Event.fire('after_protocols', t, this);
 
-    if (t.includes('\x01') && Config.debug) {
+    if (t.includes('\x01') && config.debug) {
       log('Unhandled IAC sequence:');
       const seq = Array.from(t).map((char) => char.charCodeAt(0));
       log(seq);
@@ -530,7 +530,7 @@ export class Socket {
     }
 
     this.buffer = '';
-    Config.mxp.disable();
+    config.mxp.disable();
     this.initializeSocket();
   }
 

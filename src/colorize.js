@@ -160,7 +160,7 @@ export class Colorize {
 
   process = (text) => {
     if (!text.includes('\u001b')) return text;
-    console.log('Processing text with ANSI codes:', text, this.colorize(text));
+    // console.log('Processing text with ANSI codes:', text, this.colorize(text));
     return this.colorize(text);
   };
 }

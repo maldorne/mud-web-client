@@ -1,5 +1,5 @@
 import jQuery from 'jquery';
-import { Config } from './config.js';
+import { config } from './config.js'; // Change this line
 import { Event } from './event.js';
 import { Colorize } from './colorize.js';
 import { Window } from './window.js';
@@ -30,12 +30,12 @@ export class MXP {
       if (href.includes('|')) {
         this.handleMultiChoice(href, evt.currentTarget);
       } else if (href === '#') {
-        Config.socket.write('');
+        config.socket.write('');
       } else {
-        Config.socket.write(href);
+        config.socket.write(href);
       }
     } else {
-      Config.socket.write(j(evt.currentTarget).text());
+      config.socket.write(j(evt.currentTarget).text());
     }
 
     return false;
@@ -163,9 +163,9 @@ export class MXP {
 }
 
 // Initialize MXP if enabled in settings
-if (Config.getSetting('mxp') ?? true) {
-  Config.mxp = new MXP();
-  Event.listen('internal_mxp', (text) => Config.mxp.process(text));
+if (config.getSetting('mxp') ?? true) {
+  config.mxp = new MXP();
+  Event.listen('internal_mxp', (text) => config.mxp.process(text));
 } else {
   log('MXP disabled in profile or game preferences.');
 }

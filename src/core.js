@@ -1,5 +1,5 @@
 import jQuery from 'jquery';
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Modal } from './modal.js';
 import { Event } from './event.js';
 import { ControlPanel } from './control-panel.js';
@@ -19,15 +19,15 @@ export function initializeCore() {
 
   j('body').addClass('app');
 
-  if (Config.socket) {
+  if (config.socket) {
     window.onbeforeunload = () =>
       'Are you sure you want to disconnect and leave this page?';
   }
 
-  if (Config.embed) j('body#page').css({ background: 'transparent' });
+  if (config.embed) j('body#page').css({ background: 'transparent' });
 
   j(document).ready(function () {
-    if (Config.bare || Config.clean) {
+    if (config.bare || config.clean) {
       j('#header').remove();
       j('#maininner #content').attr('id', 'app-content');
     } else {
@@ -41,7 +41,7 @@ export function initializeCore() {
         });
     }
 
-    if (Config.embed) {
+    if (config.embed) {
       Event.listen('scrollview_ready', function () {
         j('.ui-resizable-handle').css({ opacity: 0 });
         j('.icon-minus').remove();
@@ -49,7 +49,7 @@ export function initializeCore() {
     }
   });
 
-  if (Config.device.touch) {
+  if (config.device.touch) {
     document.ontouchmove = function (e) {
       e.preventDefault();
     };
@@ -66,32 +66,32 @@ export function initializeCore() {
     );
   }
 
-  if (!Config.nocore) {
-    if (!Config.nocenter) Config.ControlPanel = new ControlPanel();
+  if (!config.nocore) {
+    if (!config.nocenter) config.ControlPanel = new ControlPanel();
 
-    if (Config.host && Config.port) {
+    if (config.host && config.port) {
       new ScrollView({
         local: true,
         css: {
-          width: Config.width,
-          height: Config.height,
-          top: Config.top,
-          left: Config.left,
+          width: config.width,
+          height: config.height,
+          top: config.top,
+          left: config.left,
           zIndex: 103,
         },
         scrollback: 40 * 1000,
       });
 
-      if (!Config.embed && !Config.device.mobile && !Config.kong) {
-        Config.Toolbar = new Toolbar().init().update();
+      if (!config.embed && !config.device.mobile && !config.kong) {
+        config.Toolbar = new Toolbar().init().update();
       }
     }
 
     if (
       window.user &&
       window.user.guest &&
-      !Config.kong &&
-      !Config.device.touch
+      !config.kong &&
+      !config.device.touch
     )
       j('.app').prepend(
         '<a class="right" style="opacity:0.5;margin-right: 8px" \
@@ -99,14 +99,14 @@ export function initializeCore() {
           <i class="icon-sun"></i> login</a>',
       );
 
-    if (Config.kong) Config.ScrollView.title('Bedlam');
+    if (config.kong) config.ScrollView.title('Bedlam');
   }
 
   j(document).on('click', 'a[data-toggle="tab"]', function (e) {
     j(this).find('.badge').remove();
   });
 
-  if (!Config.device.touch) {
+  if (!config.device.touch) {
     j('body').tooltip({
       items: '.tip', // Elements that trigger the tooltip
       tooltipClass: 'ui-tooltip', // Add custom class for styling
