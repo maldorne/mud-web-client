@@ -7,30 +7,30 @@ const j = jQuery;
 export class Config {
   constructor() {
     // Default values
-    this.debug = 0;
+    this.debug = false;
     this.host = 'muds.maldorne.org';
     this.port = '5010';
     this.name = 'House of Maldorne';
     this.profile = null;
     this.width = 800;
     this.height = j(window).height() - 80;
-    this.top = 0;
-    this.left = 0;
+    this.top = false;
+    this.left = false;
     this.clean = false;
     this.solo = false;
     this.nocenter = false;
-    this.notrack = 0;
-    this.nodrag = 0;
-    this.embed = 0;
+    this.notrack = false;
+    this.nodrag = false;
+    this.embed = false;
     this.kong = null;
     this.collapse = [];
     this.dev = false;
-    this.onfirst = 0;
+    this.onfirst = false;
     this.separator = ';';
     this.proxy = 'wss://play.maldorne.org:6200/';
-    this.uncompressed = 0;
-    this.useMuProtocol = 0;
-    this.chatterbox = 0;
+    this.uncompressed = false;
+    this.useMuProtocol = false;
+    this.chatterbox = false;
     this.chatterboxConfig = null;
     this.settings = [];
 
@@ -104,7 +104,7 @@ export class Config {
       // Special handling for nested chatterbox config
       if (mudConfig.chatterbox) {
         this.chatterboxConfig = structuredClone(mudConfig.chatterboxConfig);
-        this.chatterbox = 1;
+        this.chatterbox = true;
       }
     }
 

@@ -86,8 +86,22 @@ function param(A) {
   A = A.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
   var regex = new RegExp('[\\?&]' + A + '=([^&#]*)');
   var results = regex.exec(window.location.search);
-  if (results == null) return '';
-  else return decodeURIComponent(results[1]);
+  if (results == null) {
+    // Parameter not found
+    return false;
+  }
+
+  const value = decodeURIComponent(results[1]);
+
+  // Convert to boolean if it's a boolean-like value
+  if (value.toLowerCase() === 'true' || value === '1') {
+    return true;
+  }
+  if (value.toLowerCase() === 'false' || value === '0') {
+    return false;
+  }
+
+  return value;
 }
 
 function log() {

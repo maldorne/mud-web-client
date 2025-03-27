@@ -3,7 +3,7 @@
   "host": "mud.example.com",
   "port": "5000",
   "proxy": "wss://proxy.example.com:6200/",
-  "debug": 0,
+  "debug": false,
   "width": 800,
   "height": 600,
   "top": 0,
@@ -11,13 +11,13 @@
   "clean": false,
   "solo": false,
   "nocenter": false,
-  "notrack": 0,
-  "nodrag": 0,
-  "embed": 0,
+  "notrack": false,
+  "nodrag": false,
+  "embed": false,
   "separator": ";",
-  "uncompressed": 0,
-  "useMuProtocol": 0,
-  "chatterbox": 1,
+  "uncompressed": false,
+  "useMuProtocol": false,
+  "chatterbox": true,
   "chatterboxConfig": {
     "title": "Communications",
     "css": {
@@ -38,7 +38,10 @@
         "match": "^(\\w+) (says|tells you) '([^']+)'$",
         "replace": "<span style='color:cyan'>$1</span> $2 '$3'",
         "time": true,
-        "channels": ["say", "tell"]
+        "channels": [
+          "say",
+          "tell"
+        ]
       },
       {
         "name": "Combat",
@@ -47,5 +50,6 @@
         "time": true
       }
     ]
-  }
+  },
+  "controlPanel": false
 }
