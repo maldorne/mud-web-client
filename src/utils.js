@@ -1,4 +1,5 @@
-import { Config } from './config.js';
+/* eslint-disable no-useless-escape */
+import { config } from './config.js';
 import * as polyfills from './polyfills.js';
 
 // execute polyfills
@@ -90,11 +91,11 @@ function param(A) {
 }
 
 function log() {
-  if (Config.debug) console.log.apply(console, arguments);
+  if (config.debug) console.log.apply(console, arguments);
 }
 
 function dump(A) {
-  if (Config.debug) console.log(stringify(A));
+  if (config.debug) console.log(stringify(A));
 }
 
 function exists(A) {
