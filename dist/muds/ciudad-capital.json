@@ -2,21 +2,21 @@
   "name": "Ciudad Capital",
   "host": "muds.maldorne.org",
   "port": "5010",
-  "debug": 0,
+  "debug": false,
   "width": 800,
   "top": 0,
   "left": 0,
   "clean": false,
   "solo": false,
   "nocenter": false,
-  "notrack": 0,
-  "nodrag": 0,
-  "embed": 0,
+  "notrack": false,
+  "nodrag": false,
+  "embed": false,
   "separator": ";",
   "proxy": "wss://play.maldorne.org:6200/",
-  "uncompressed": 0,
-  "useMuProtocol": 0,
-  "chatterbox": 1,
+  "uncompressed": false,
+  "useMuProtocol": false,
+  "chatterbox": true,
   "chatterboxConfig": {
     "title": "Communications",
     "css": {
@@ -28,7 +28,9 @@
     "tabs": [
       {
         "name": "Creators",
-        "channels": ["cre"],
+        "channels": [
+          "cre"
+        ],
         "match": "\\[(Cre)\\] ([^:]+): (.+)",
         "replace": "<span class=\"creator\">[<span style=\"color:#FFD700\">$1</span>] <span style=\"color:#00CED1\">$2</span>: $3</span>",
         "time": true,
@@ -36,7 +38,9 @@
       },
       {
         "name": "Support",
-        "channels": ["support"],
+        "channels": [
+          "support"
+        ],
         "match": "\\[(Support)\\] ([^:]+): (.+)",
         "replace": "<span class=\"support\">[<span style=\"color:#FF69B4\">$1</span>] <span style=\"color:#4169E1\">$2</span>: $3</span>",
         "time": true,
@@ -44,7 +48,9 @@
       },
       {
         "name": "Say",
-        "channels": ["say"],
+        "channels": [
+          "say"
+        ],
         "match": "^(\\w+) (says) '([^']+)'$",
         "replace": "<span style=\"color:yellow\">$1</span> says '$2'",
         "time": true,
@@ -52,12 +58,20 @@
       },
       {
         "name": "Tell",
-        "channels": ["tell"],
+        "channels": [
+          "tell"
+        ],
         "match": "^(\\w+) (tells you) '([^']+)'$",
         "replace": "<span style=\"color:cyan\">$1</span> tells you '$2'",
         "time": true,
         "scroll": true
       }
     ]
+  },
+  "controlPanel": false,
+  "groupTab": false,
+  "initialIFrame": {
+    "URL": "https://www.maldorne.org",
+    "title": "Asociación Maldorne"
   }
 }
