@@ -52,5 +52,90 @@
     ]
   },
   "controlPanel": false,
-  "groupTab": false
+  "groupTab": false,
+  "macros": false,
+  "useFakeUser": true,
+  "fakeUser": {
+    "id": "test-user-1",
+    "username": "TestUser",
+    "guest": false,
+    "pref": {
+      "win": {
+        "muds.maldorne.org:5010:1920x1080": {
+          "#chat-window": {
+            "offset": { "top": 0, "left": 800 },
+            "width": 400,
+            "height": 400,
+            "zIndex": 101,
+            "opacity": 1,
+            "collapsed": 0
+          },
+          "#control-panel": {
+            "offset": { "top": 400, "left": 800 },
+            "width": 700,
+            "height": 500,
+            "zIndex": 101,
+            "opacity": 1,
+            "collapsed": 0
+          },
+          "#macro-pane": {
+            "offset": { "top": 600, "left": 800 },
+            "width": 400,
+            "height": 200,
+            "zIndex": 101,
+            "opacity": 1,
+            "collapsed": 0
+          },
+          "#group-tab": {
+            "offset": { "top": 0, "left": 0 },
+            "width": 400,
+            "height": 600,
+            "zIndex": 101,
+            "opacity": 1,
+            "collapsed": 0
+          }
+        }
+      },
+      "sitelist": {
+        "Ciudad Capital": {
+          "settings": [
+            { "id": "mxp", "value": true },
+            { "id": "echo", "value": true },
+            { "id": "keepcom", "value": true },
+            { "id": "spellcheck", "value": true },
+            { "id": "automulti", "value": true }
+          ],
+          "macros": [
+            ["F1", "help", "Help", true],
+            ["F2", "score", "Score", true],
+            ["F3", "inventory", "Inventory", true],
+            ["F4", "equipment", "Equipment", true]
+          ],
+          "triggers": [
+            ["^You are hungry\\.$", "eat bread", true],
+            ["^You are thirsty\\.$", "drink water", true]
+          ]
+        }
+      },
+      "profiles": {
+        "warrior": {
+          "host":"muds.maldorne.org",
+          "settings": [
+            { "id": "official", "value": true },
+            { "id": "mxp", "value": true }
+          ],
+          "macros": [
+            ["F5", "wield sword", "Wield Sword", true],
+            ["F6", "wear all", "Wear All", true],
+            ["F7", "remove all", "Remove All", true]
+          ],
+          "triggers": [
+            ["^Your .+ is worn out\\.$", "remove $1", true]
+          ]
+        }
+      },
+      "channel": "Lobby"
+    },
+    "channel": "Lobby"
+  }  
 }
