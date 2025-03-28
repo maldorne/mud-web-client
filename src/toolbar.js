@@ -4,17 +4,25 @@ import { Event } from './event.js';
 const j = jQuery;
 
 export class Toolbar {
-  constructor() {
-    this.init();
-  }
+  constructor() {}
 
-  init() {
-    j('body').append('<div id="tmp-toolbar" class="tmp-toolbar"></div>');
+  initialize() {
+    // Check if toolbar already exists
+    if (!j('#tmp-toolbar').length) {
+      j('body').append('<div id="tmp-toolbar" class="tmp-toolbar"></div>');
+    }
 
     j('#tmp-toolbar').on('click', 'button', (e) => {
       e.stopPropagation();
 
       const target = j(e.target).attr('href');
+      // Check if window still exists
+      if (!j(target).length) {
+        // Window was closed, remove button
+        j(e.target).remove();
+        return;
+      }
+
       const win = j(target).get(0).win;
       const button = j(e.target);
 
@@ -31,12 +39,12 @@ export class Toolbar {
       }
     });
 
-    // Event listeners
-    Event.listen('window_open', this.update.bind(this));
-    Event.listen('window_close', this.update.bind(this));
-    Event.listen('window_show', this.update.bind(this));
-    Event.listen('window_hide', this.update.bind(this));
-    Event.listen('window_front', this.front.bind(this));
+    // Event listeners - Make update async to ensure DOM is updated
+    Event.listen('window_open', () => setTimeout(() => this.update(), 0));
+    Event.listen('window_close', () => setTimeout(() => this.update(), 0));
+    Event.listen('window_show', () => setTimeout(() => this.update(), 0));
+    Event.listen('window_hide', () => setTimeout(() => this.update(), 0));
+    Event.listen('window_front', (id) => this.front(id));
 
     return this;
   }

@@ -1210,3 +1210,7 @@ textarea.me-input {
 .left {
   float: left;
 }
+
+.ui-helper-hidden-accessible {
+  display: none !important;
+}

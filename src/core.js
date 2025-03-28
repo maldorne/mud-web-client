@@ -83,7 +83,9 @@ export function initializeCore() {
       });
 
       if (!config.embed && !config.device.mobile && !config.kong) {
-        config.Toolbar = new Toolbar().init().update();
+        config.Toolbar = new Toolbar();
+        config.Toolbar.initialize();
+        config.Toolbar.update();
       }
     }
 
@@ -125,6 +127,13 @@ export function initializeCore() {
       },
       content: function () {
         return j(this).prop('title');
+      },
+      open: function (event, ui) {
+        // Remove any lingering tooltips
+        j('.ui-helper-hidden-accessible').remove();
+      },
+      close: function (event, ui) {
+        ui.tooltip.remove();
       },
     });
   }
