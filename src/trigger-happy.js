@@ -18,7 +18,7 @@ export class TriggerHappy {
   init(games, profiles) {
     this.setupFirstTimeEvents();
 
-    if (config.notriggers) {
+    if (!config.triggers) {
       log('Triggers disabled by official code.');
       return;
     }
@@ -98,7 +98,7 @@ export class TriggerHappy {
   }
 
   respond(message) {
-    if (config.notriggers) return message;
+    if (!config.triggers) return message;
 
     for (const trigger of this.triggers) {
       const [pattern, command, enabled, regex] = trigger;

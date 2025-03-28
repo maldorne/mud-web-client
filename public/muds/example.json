@@ -54,6 +54,7 @@
   "controlPanel": false,
   "groupTab": false,
   "macros": false,
+  "triggers": false,
   "useFakeUser": true,
   "fakeUser": {
     "id": "test-user-1",

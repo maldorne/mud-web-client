@@ -9,7 +9,7 @@ if (param('havoc')) {
   Config.base64 = 1;
   Config.debug = 1;
   Config.notrack = 1;
-  Config.notriggers = 1;
+  Config.triggers = false;
   Config.macros = false;
 
   Event.listen('socket_open', function () {

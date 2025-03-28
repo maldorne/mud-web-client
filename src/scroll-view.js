@@ -459,7 +459,7 @@ export class ScrollView {
       this.echo('Activating macros.');
     }
 
-    if (!config.notriggers) {
+    if (config.triggers) {
       config.TriggerHappy = new TriggerHappy({ socket: this.ws });
       Event.listen('after_display', (msg) => config.TriggerHappy.respond(msg));
       this.echo('Activating triggers.');

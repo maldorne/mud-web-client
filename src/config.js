@@ -37,6 +37,7 @@ export class Config {
     this.groupTab = false;
     this.initialIFrame = null;
     this.macros = false;
+    this.triggers = false;
     this.useFakeUser = false;
     this.fakeUser = null;
     this.saveRemotePrefs = false;
@@ -149,6 +150,7 @@ export class Config {
     this.controlPanel = param('controlPanel') || this.controlPanel;
     this.groupTab = param('groupTab') || this.groupTab;
     this.macros = param('macros') || this.macros;
+    this.triggers = param('triggers') || this.triggers;
     this.useFakeUser = param('useFakeUser') || this.useFakeUser;
     this.saveRemotePrefs = param('saveRemotePrefs') || this.saveRemotePrefs;
 
