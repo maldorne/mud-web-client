@@ -12,6 +12,7 @@ import { GroupTab } from './group-tab.js'; // GroupTab module
 import { IFrame } from './iframe.js';
 // import { MistyBars } from './misty-bars.js'; // MistyBars module
 import { LoginPrompt } from './login-prompt.js';
+import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
 
 window.jQuery = window.$ = jQuery;
 
@@ -77,6 +78,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       gmcp: true,
       placeholder: 'Username',
       // ... other options
+    });
+  }
+
+  if (config.mapper) {
+    new JujuMapper({
+      title: 'Juju Mapper',
+      css: {
+        width: 800,
+        height: 600,
+        top: 0,
+        left: '30%',
+      },
+      drag: true, // Enable dragging
+      snap: true, // Enable snapping to other windows
     });
   }
 });

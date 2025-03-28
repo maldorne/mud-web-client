@@ -53,6 +53,7 @@
     "@types/jquery": "^3.5.32",
     "@types/jqueryui": "^1.12.24",
     "bootstrap": "^5.3.3",
+    "d3": "^7.9.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.3",
