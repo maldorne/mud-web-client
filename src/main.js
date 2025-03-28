@@ -11,6 +11,7 @@ import { ControlPanel } from './control-panel.js'; // ControlPanel module
 import { GroupTab } from './group-tab.js'; // GroupTab module
 import { IFrame } from './iframe.js';
 // import { MistyBars } from './misty-bars.js'; // MistyBars module
+import { LoginPrompt } from './login-prompt.js';
 
 window.jQuery = window.$ = jQuery;
 
@@ -70,4 +71,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   //   title: 'Custom Bars',
   //   listen: 'custom-event',
   // });
+
+  const loginPrompt = new LoginPrompt({
+    gmcp: true,
+    placeholder: 'Username',
+    // ... other options
+  });
 });

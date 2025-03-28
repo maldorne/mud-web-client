@@ -1,0 +1,9 @@
+
+.login-prompt .modal-dialog {
+  margin: 0;
+}
+
+.login-prompt .modal-footer {
+  background-color: white;
+  padding: 5px 5px 10px 5px;
+}

@@ -1,6 +1,6 @@
 import jQuery from 'jquery';
 import { Modal as BootstrapModal } from 'bootstrap';
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { Colorize } from './colorize.js';
 import { log, stringify, exists } from './utils.js';
@@ -12,14 +12,14 @@ export class ModalInput {
     this.options = options;
     this.colorize = new Colorize();
     this.modalInstance = null;
-    this.init();
+    this.initialize();
   }
 
   close(send = false) {
     log('ModalInput close');
 
     if (!send) {
-      Config.Socket.write(this.options.abort);
+      config.Socket.write(this.options.abort);
     }
 
     this.cleanupEventListeners();
@@ -32,7 +32,7 @@ export class ModalInput {
     const msg = j('.modal .me-input').val();
 
     if (j('.modal .me-pass2').length) {
-      Config.Socket.write(
+      config.Socket.write(
         stringify({
           password1: msg,
           password2: j('.modal .me-pass2').val(),
@@ -40,7 +40,7 @@ export class ModalInput {
       );
     } else {
       const { before = '', after = '' } = this.options;
-      Config.Socket.write(before + msg + after);
+      config.Socket.write(before + msg + after);
     }
 
     this.close(true);
@@ -52,7 +52,7 @@ export class ModalInput {
     j('.modal .me-second').off();
   }
 
-  init() {
+  initialize() {
     const o = this.options;
     o.backdrop = o.backdrop || false;
 
@@ -63,7 +63,7 @@ export class ModalInput {
 
     if (o.mxp) {
       o.replace = 1;
-      o.mxp = Config.mxp.translate(o.mxp);
+      o.mxp = config.mxp.translate(o.mxp);
       o.intro = o.intro ? o.mxp + o.intro : o.mxp;
     }
 
@@ -71,9 +71,9 @@ export class ModalInput {
       o.text = this.colorize.strip(o.text).replace(/\r/g, '');
     }
 
-    if (o.error) o.error = Config.mxp.prep(o.error);
-    if (o.info) o.info = Config.mxp.prep(o.info);
-    if (o.intro) o.intro = Config.mxp.prep(o.intro);
+    if (o.error) o.error = config.mxp.prep(o.error);
+    if (o.info) o.info = config.mxp.prep(o.info);
+    if (o.intro) o.intro = config.mxp.prep(o.intro);
 
     if (o.replace && j('.me-modal').length && j('.me-modal').is(':visible')) {
       j('.modal h3').html(o.title);
@@ -215,7 +215,7 @@ export class ModalInput {
 
       if (button.send) {
         j('.modal-footer .custom-' + index).click(() => {
-          Config.Socket.write(button.send);
+          config.Socket.write(button.send);
         });
       }
 

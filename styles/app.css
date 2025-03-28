@@ -2,6 +2,7 @@
 
 @import url("./fonts.css");
 @import url("./chat.css");
+@import url("./login.css");
 
 body {
 	outline: 0 none !important;
@@ -485,7 +486,11 @@ button.disabled {
   z-index: 1051;
 }
 
-.modal, .modal-footer, .dropdown-menu {
+.modal-dialog {
+  margin: 0;
+}
+
+.modal .modal-footer .dropdown-menu {
   background-color: rgba(0, 0, 0, 0.7);
   border-color: rgba(255, 255, 255, 0.1);
   border-radius: 6px;
@@ -493,15 +498,15 @@ button.disabled {
   padding: 3px 5px;
 }
 
-.modal, .modal-footer, .dropdown-menu li {
+.modal .modal-footer .dropdown-menu li {
   margin: 0px;
 }
 
-.modal, .modal-footer, .dropdown-menu li a {
+.modal .modal-footer .dropdown-menu li a {
   padding: 0px;
 } 
 
-.modal, .modal-footer, .dropdown-menu .dropdown-item {
+.modal .modal-footer .dropdown-menu .dropdown-item {
   color: #ccc;
 } 
 

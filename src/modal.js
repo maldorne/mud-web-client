@@ -1,6 +1,6 @@
 import jQuery from 'jquery';
 import { Modal as BootstrapModal } from 'bootstrap';
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { log } from './utils.js';
 
@@ -19,7 +19,7 @@ export class Modal {
     log('Modal.close');
 
     if (this.options.abort) {
-      Config.Socket.write(this.options.abort);
+      config.Socket.write(this.options.abort);
     }
 
     if (this.modalInstance) {
@@ -41,13 +41,13 @@ export class Modal {
 
     if (o.mxp) {
       o.replace = 1;
-      o.mxp = Config.mxp.translate(o.mxp);
+      o.mxp = config.mxp.translate(o.mxp);
       o.text = o.text ? o.mxp + o.text : o.mxp;
     }
 
-    if (o.text) o.text = Config.mxp.prep(o.text);
-    if (o.error) o.error = Config.mxp.prep(o.error);
-    if (o.info) o.info = Config.mxp.prep(o.info);
+    if (o.text) o.text = config.mxp.prep(o.text);
+    if (o.error) o.error = config.mxp.prep(o.error);
+    if (o.info) o.info = config.mxp.prep(o.info);
 
     if (o.monospace !== undefined && !o.monospace) {
       o.html = o.text;
@@ -153,7 +153,7 @@ export class Modal {
 
         if (button.send) {
           $button.on('click', () => {
-            Config.Socket.write(button.send);
+            config.Socket.write(button.send);
             if (!button.keep) {
               this.modalInstance.hide();
             }
@@ -184,7 +184,7 @@ export class Modal {
         `;
         j('.modal-footer').append(buttonEl);
         j('.modal-footer .custom-' + index).click(() => {
-          Config.Socket.write(cmd);
+          config.Socket.write(cmd);
         });
       });
     }
@@ -220,7 +220,7 @@ export class Modal {
           </a><br>
         `);
         j('.modal-links .link-' + index).click(() => {
-          Config.Socket.write(cmd);
+          config.Socket.write(cmd);
         });
       });
     }
