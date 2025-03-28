@@ -335,9 +335,12 @@ export class ChatterBox {
     }, 500);
   }
 
-  // tab(t) {
-  //   const i = this.options.tabs.length;
-  //   this.options.tabs.push(t);
-  //   return this.win.tab(t);
-  // }
+  addTab(t) {
+    // Add tab to internal tabs array
+    // const index = this.options.tabs.length;
+    this.options.tabs.push(t);
+
+    // Create tab UI using Window class
+    return this.win.addTab(t);
+  }
 }

@@ -8,6 +8,7 @@ import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
 import { ChatterBox } from './chatter-box.js'; // ChatterBox module
 import { ControlPanel } from './control-panel.js'; // ControlPanel module
+import { GroupTab } from './group-tab.js'; // GroupTab module
 
 window.jQuery = window.$ = jQuery;
 
@@ -26,5 +27,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (config.controlPanel) {
     let cp = new ControlPanel();
     await cp.initialize();
+  }
+
+  if (config.groupTab) {
+    let gt = new GroupTab();
+    await gt.initialize();
   }
 });

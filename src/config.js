@@ -34,6 +34,7 @@ export class Config {
     this.chatterboxConfig = null;
     this.settings = [];
     this.controlPanel = false;
+    this.groupTab = false;
 
     // Device detection
     this.device = {
@@ -136,6 +137,7 @@ export class Config {
     this.useMuProtocol = param('useMuProtocol') || this.useMuProtocol;
     this.chatterbox = param('chatterbox') || this.chatterbox;
     this.controlPanel = param('controlPanel') || this.controlPanel;
+    this.groupTab = param('groupTab') || this.groupTab;
 
     // Update settings and view
     this.settings = this.getSettings();

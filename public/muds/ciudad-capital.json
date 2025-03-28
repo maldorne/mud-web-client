@@ -68,5 +68,6 @@
       }
     ]
   },
-  "controlPanel": true
+  "controlPanel": false,
+  "groupTab": false
 }

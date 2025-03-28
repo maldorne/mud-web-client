@@ -29,6 +29,7 @@ export class Window {
     this.height = null;
     this.maximized = false;
     this.wasAt = null;
+    this.tabsInitialized = false;
 
     this.drag =
       !config.device.mobile &&
@@ -57,11 +58,11 @@ export class Window {
       this.options.handle = '.none';
     }
 
-    this.init();
+    this.initialize();
     // return this.createInterface();
   }
 
-  init() {
+  initialize() {
     const o = this.options;
     o.id = o.id.startsWith('#') ? o.id : '#' + o.id;
     this.id = o.id;
@@ -454,6 +455,21 @@ export class Window {
     this.setupDraggable();
   }
 
+  setFirstTabActive() {
+    const tabElements = document.querySelectorAll(
+      `${this.id} [data-bs-toggle="tab"]`,
+    );
+
+    const firstTab = tabElements[0];
+    if (firstTab) {
+      const targetPane = document.querySelector(firstTab.getAttribute('href'));
+      if (targetPane) {
+        targetPane.classList.add('active', 'show');
+        firstTab.classList.add('active');
+      }
+    }
+  }
+
   initializeTabs() {
     // Get all tab elements
     const tabElements = document.querySelectorAll(
@@ -488,51 +504,67 @@ export class Window {
     });
 
     // Show first tab by default
-    const firstTab = tabElements[0];
-    if (firstTab) {
-      const targetPane = document.querySelector(firstTab.getAttribute('href'));
-      if (targetPane) {
-        targetPane.classList.add('active', 'show');
-        firstTab.classList.add('active');
-      }
-    }
+    this.setFirstTabActive();
+
+    this.tabsInitialized = true;
   }
 
   createTab(tab, index) {
     const tabHtml = `
-    <li class="nav-item">
-      <a class="kbutton ${tab.id ? tab.id.replace('#', '') : ''}" 
-         data-bs-toggle="tab" 
-         href="#tab-${index}"
-         role="tab"
-         aria-controls="tab-${index}"
-         aria-selected="${index === 0 ? 'true' : 'false'}">
-        ${tab.name}
-      </a>
-    </li>
-  `;
+      <li class="nav-item">
+        <a class="kbutton ${tab.id ? tab.id.replace('#', '') : ''}" 
+          data-bs-toggle="tab" 
+          href="#tab-${index}"
+          role="tab"
+          aria-controls="tab-${index}"
+          aria-selected="false">
+          ${tab.name}
+        </a>
+      </li>
+    `;
 
     // Add tab navigation
-    if (!tab.after && !tab.before) {
+    if (!tab.before) {
       j(`${this.id} .nav-tabs`).append(tabHtml);
     } else if (tab.before) {
       j(tabHtml).insertBefore(
-        j(`${this.options.id} .nav-tabs a:contains("${tab.before}")`).parent(),
-      );
-    } else {
-      j(tabHtml).insertAfter(
-        j(`${this.options.id} .nav-tabs a:contains("${tab.after}")`).parent(),
+        j(`${this.options.id} .nav-tabs li:first-child`),
       );
     }
 
     // Add tab content
     j(`${this.options.id} .tab-content`).append(`
-      <div class="tab-pane fade ${index === 0 ? 'show active' : ''} ${tab.class || ''}" 
+      <div class="tab-pane fade ${tab.class || ''}" 
           id="tab-${index}"
           role="tabpanel"
           aria-labelledby="tab-${index}-tab">
         ${tab.html || ''}
       </div>`);
+
+    if (this.tabsInitialized) {
+      j(`${this.id} .nav-tabs .nav-item a`).removeClass('active');
+      j(`${this.id} .tab-content .tab-pane`).removeClass('active show');
+
+      this.setFirstTabActive();
+    }
+
+    // Get the content element
+    const contentElement = document.querySelector(
+      `${this.options.id} #tab-${index} .content`,
+    );
+
+    // Only setup ResizeObserver if we have a content element
+    if (contentElement) {
+      const resizeObserver = new ResizeObserver(() => {
+        this.resize();
+      });
+
+      try {
+        resizeObserver.observe(contentElement);
+      } catch (error) {
+        log('Error setting up ResizeObserver:', error);
+      }
+    }
 
     if (tab.scroll) {
       const tabContent = j(`${this.options.id} #tab-${index} .content`);
@@ -556,12 +588,12 @@ export class Window {
       });
 
       // Ensure height is maintained after niceScroll initialization
-      const resizeObserver = new ResizeObserver(() => {
-        tabContent.css('height', 'inherit');
-        tabContent.getNiceScroll().resize();
-      });
+      // const resizeObserver = new ResizeObserver(() => {
+      //   tabContent.css('height', 'inherit');
+      //   tabContent.getNiceScroll().resize();
+      // });
 
-      resizeObserver.observe(tabContent[0]);
+      // resizeObserver.observe(tabContent[0]);
     }
 
     // let content = j(`${this.options.id} .content`);
@@ -569,6 +601,8 @@ export class Window {
     //   cursorborder: 'none',
     // });
     // content.css({ height: 'inherit' });
+
+    return `${this.id} #tab-${index}`;
   }
 
   dock(options) {

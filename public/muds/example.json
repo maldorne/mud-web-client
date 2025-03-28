@@ -51,5 +51,6 @@
       }
     ]
   },
-  "controlPanel": false
+  "controlPanel": false,
+  "groupTab": false
 }
