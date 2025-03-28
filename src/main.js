@@ -10,7 +10,7 @@ import { ChatterBox } from './chatter-box.js'; // ChatterBox module
 import { ControlPanel } from './control-panel.js'; // ControlPanel module
 import { GroupTab } from './group-tab.js'; // GroupTab module
 import { IFrame } from './iframe.js';
-// import { MacroPane } from './macro-pane.js'; // MacroPane module
+// import { MistyBars } from './misty-bars.js'; // MistyBars module
 
 window.jQuery = window.$ = jQuery;
 
@@ -65,4 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     helpFrame.initialize();
   }
+
+  // const bars = new MistyBars({
+  //   title: 'Custom Bars',
+  //   listen: 'custom-event',
+  // });
 });
