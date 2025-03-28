@@ -10,9 +10,23 @@ import { log, stringify, param } from './utils.js';
 const j = jQuery;
 
 export class ControlPanel {
-  constructor() {
+  constructor(options = {}) {
     if (!window.user) return;
     if (this.touch && param('host')) return;
+
+    this.options = {
+      // default values
+      title: 'Game Center',
+      css: {
+        width: 700,
+        height: 500,
+        top: 0,
+        right: 0,
+      },
+      ...options,
+      // this is always the same
+      id: '#control-panel',
+    };
 
     this.id = '#control-panel';
     this.mobile = config.device.mobile;
@@ -23,7 +37,6 @@ export class ControlPanel {
     this.sound = false;
     // this.sitelist = window.sitelist;
     this.pref = window.user.pref;
-
     this.exposeToConfig();
   }
 
@@ -57,6 +70,8 @@ export class ControlPanel {
         opacity: 1,
         zIndex: 101,
       },
+      drag: this.options.drag, // Enable dragging
+      snap: this.options.snap, // Enable snapping to other windows
     });
 
     j(this.id).get(0).win = this.win;
@@ -176,6 +191,8 @@ export class ControlPanel {
       // Fetch the sitelist from our local file
       const response = await fetch('/sitelist/sitelist.json');
       const sitelist = await response.json();
+
+      this.sitelist = sitelist;
 
       sitelist.forEach((game, index) => {
         try {
@@ -521,8 +538,6 @@ export class ControlPanel {
   }
 
   initChat() {
-    this.chat = new Socket({ type: 'chat' });
-
     Event.listen('chat_open', (c) => {
       log('Event: chat_open');
 
@@ -551,8 +566,6 @@ export class ControlPanel {
         this.chatlog.push(chatEntry);
         this.chatUpdate(chatEntry);
       }
-
-      return null;
     });
 
     Event.listen('chat_before_close', (c) => {
@@ -574,6 +587,8 @@ export class ControlPanel {
         this.closeChat();
       }
     });
+
+    this.chat = new Socket({ type: 'chat' });
 
     // Initialize chat after loading
     if (param('profile')) {

@@ -52,5 +52,7 @@
     ]
   },
   "controlPanel": false,
-  "groupTab": false
+  "groupTab": false,
+  "macros": false,
+  "useFakeUser": true
 }

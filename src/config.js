@@ -36,6 +36,10 @@ export class Config {
     this.controlPanel = false;
     this.groupTab = false;
     this.initialIFrame = null;
+    this.macros = false;
+    this.useFakeUser = false;
+    this.fakeUser = null;
+    this.saveRemotePrefs = false;
 
     // Device detection
     this.device = {
@@ -109,6 +113,11 @@ export class Config {
         this.chatterboxConfig = structuredClone(mudConfig.chatterboxConfig);
         this.chatterbox = true;
       }
+
+      if (mudConfig.useFakeUser && mudConfig.fakeUser) {
+        this.fakeUser = structuredClone(mudConfig.fakeUser);
+        this.useFakeUser = true;
+      }
     }
 
     // URL parameters override default values and config file values
@@ -139,6 +148,9 @@ export class Config {
     this.chatterbox = param('chatterbox') || this.chatterbox;
     this.controlPanel = param('controlPanel') || this.controlPanel;
     this.groupTab = param('groupTab') || this.groupTab;
+    this.macros = param('macros') || this.macros;
+    this.useFakeUser = param('useFakeUser') || this.useFakeUser;
+    this.saveRemotePrefs = param('saveRemotePrefs') || this.saveRemotePrefs;
 
     if (param('initialURL')) {
       let url = param('initialURL');
@@ -157,6 +169,27 @@ export class Config {
     // Update settings and view
     this.settings = this.getSettings();
     this.view = `${this.host}:${this.port}:${window.screen.width}x${window.screen.height}`;
+
+    if (this.useFakeUser) {
+      // change the field pref.win.<first entry> to the current actual value
+      // If there are window preferences
+      if (this.fakeUser.pref?.win) {
+        // Get the first (and presumably only) key in win object
+        const oldView = Object.keys(this.fakeUser.pref.win)[0];
+
+        if (oldView !== this.view) {
+          // Create new entry with current view
+          this.fakeUser.pref.win[this.view] = this.fakeUser.pref.win[oldView];
+          // Delete old entry
+          // delete this.fakeUser.pref.win[oldView];
+        }
+      }
+
+      // Add this before the config instance creation
+      if (!window.user) {
+        window.user = this.fakeUser;
+      }
+    }
   }
 }
 

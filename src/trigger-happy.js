@@ -1,11 +1,11 @@
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { log, param } from './utils.js';
 
 export class TriggerHappy {
   constructor(options) {
-    this.host = Config.host;
-    this.port = Config.port;
+    this.host = config.host;
+    this.port = config.port;
     this.triggers = [];
     this.gTriggers = [];
     this.pTriggers = [];
@@ -18,7 +18,7 @@ export class TriggerHappy {
   init(games, profiles) {
     this.setupFirstTimeEvents();
 
-    if (Config.notriggers) {
+    if (config.notriggers) {
       log('Triggers disabled by official code.');
       return;
     }
@@ -30,26 +30,26 @@ export class TriggerHappy {
   }
 
   setupFirstTimeEvents() {
-    if (!Config.onfirst) return;
+    if (!config.onfirst) return;
 
     Event.listen('before_process', (data) => {
-      if (!Config.onfirst) return data;
+      if (!config.onfirst) return data;
 
-      const commands = Config.onfirst.split(';');
+      const commands = config.onfirst.split(';');
 
       if (commands.length > 1 && data.includes(commands[0])) {
         commands.slice(1).forEach((command, index) => {
           setTimeout(
             () => {
-              Config.socket.write(`${command}\r\n`);
-              Config.socket.echo('\n');
+              config.socket.write(`${command}\r\n`);
+              config.socket.echo('\n');
             },
             (index + 1) * 600,
           );
         });
 
         log('sending onfirst text');
-        delete Config.onfirst;
+        delete config.onfirst;
       }
 
       return data;
@@ -94,13 +94,14 @@ export class TriggerHappy {
     const totalAvailable = this.gTriggers.length + this.pTriggers.length;
     const activeCount = this.triggers.length;
 
-    Config.socket.echo(`Loaded ${activeCount}/${totalAvailable} triggers.`);
+    config.socket.echo(`Loaded ${activeCount}/${totalAvailable} triggers.`);
   }
 
   respond(message) {
-    if (Config.notriggers) return message;
+    if (config.notriggers) return message;
 
-    this.triggers.forEach(([pattern, command, enabled, regex]) => {
+    for (const trigger of this.triggers) {
+      const [pattern, command, enabled, regex] = trigger;
       const match = regex.exec(message);
 
       if (!match?.length) return;
@@ -118,8 +119,8 @@ export class TriggerHappy {
         });
       }
 
-      Config.socket.send(processedCommand);
-    });
+      config.socket.send(processedCommand);
+    }
 
     return message;
   }

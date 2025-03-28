@@ -10,6 +10,7 @@ import { ChatterBox } from './chatter-box.js'; // ChatterBox module
 import { ControlPanel } from './control-panel.js'; // ControlPanel module
 import { GroupTab } from './group-tab.js'; // GroupTab module
 import { IFrame } from './iframe.js';
+// import { MacroPane } from './macro-pane.js'; // MacroPane module
 
 window.jQuery = window.$ = jQuery;
 
@@ -22,11 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   initializeCore();
 
   if (config.chatterbox) {
-    new ChatterBox();
+    new ChatterBox({
+      drag: true, // Enable dragging
+      snap: true, // Enable snapping to other windows
+    });
   }
 
+  // control panel has to be loaded before other modules, so the sitelist
+  // is available
   if (config.controlPanel) {
-    let cp = new ControlPanel();
+    let cp = new ControlPanel({
+      drag: true, // Enable dragging
+      snap: true, // Enable snapping to other windows
+    });
     await cp.initialize();
   }
 

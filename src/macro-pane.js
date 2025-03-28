@@ -2,15 +2,16 @@ import jQuery from 'jquery';
 import { config } from './config.js';
 import { Window } from './window.js';
 import { log, stringify, param } from './utils.js';
+import { Event } from './event.js';
 
 const j = jQuery;
 
 export class MacroPane {
-  constructor(options) {
-    if (config.nomacros) return;
+  constructor(options = {}) {
+    if (!config.macros) return;
 
     this.id = '#macro-pane';
-    this.socket = options.socket;
+    this.socket = config.socket;
     this.host = config.host;
     this.port = config.port;
     this.buttons = [];
@@ -33,10 +34,10 @@ export class MacroPane {
       this.pMacros = P[param('profile')].macros;
     }
 
-    this.init();
+    this.exposeToConfig();
   }
 
-  init() {
+  initialize() {
     let hasFavorites = false;
     this.buttons = [];
 
@@ -71,7 +72,7 @@ export class MacroPane {
 
     if (!this.buttons.length) return;
 
-    const win = new Window({
+    this.win = new Window({
       id: this.id,
       title: 'Quick Buttons',
       closeable: true,
@@ -124,7 +125,7 @@ export class MacroPane {
   }
 
   processCommand(message) {
-    if (config.nomacros) return message;
+    if (!config.macros) return message;
 
     log(`MacroPane.sub: ${this.buttons.length}`);
 
@@ -166,4 +167,15 @@ export class MacroPane {
   //     sub: (msg) => pane.processCommand(msg)
   //   };
   // }
+
+  sub = (msg) => {
+    return this.processCommand(msg);
+  };
+
+  exposeToConfig() {
+    config.MacroPane = this;
+    setTimeout(() => {
+      Event.fire('macropane_ready', this);
+    }, 500);
+  }
 }

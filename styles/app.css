@@ -1206,3 +1206,7 @@ textarea.me-input {
 .top-a-line #top-a::before, .top-b-line #top-b::before, .main-line #main::before, .bottom-a-line #bottom-a::before, .bottom-b-line #bottom-b::before, .footer-line #footer::before {
     background: none !important;
 }
+
+.left {
+  float: left;
+}

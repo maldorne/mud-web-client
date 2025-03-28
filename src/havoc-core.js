@@ -10,7 +10,7 @@ if (param('havoc')) {
   Config.debug = 1;
   Config.notrack = 1;
   Config.notriggers = 1;
-  Config.nomacros = 1;
+  Config.macros = false;
 
   Event.listen('socket_open', function () {
     Config.Socket.write('{ portal: 1 }');

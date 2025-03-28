@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 import { config, MU_CHANNELS } from './config.js';
 import { Event } from './event.js';
 import { Colorize } from './colorize.js';
@@ -35,7 +36,7 @@ export class Socket {
     this.colorize = new Colorize();
     this.commands = [];
     this.commandIndex = 0;
-    this.echo = true;
+    // this.echo = true;
     this.keepCommand = config.getSetting('keepcom') ?? true;
 
     if (this.proxy?.includes('maldorne')) {
@@ -555,6 +556,12 @@ export class Socket {
 
   connected() {
     return this.connected;
+  }
+
+  echo(msg) {
+    if (this.out) {
+      this.out.echo(msg);
+    }
   }
 
   // createInterface() {

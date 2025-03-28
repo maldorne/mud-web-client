@@ -130,8 +130,10 @@ export class Window {
         icon: 'fa-solid fa-xmark',
         title: 'Close this window',
         click: () => {
-          if (this.options.onClose) this.options.onClose();
-          Event.fire('window_close', j(this.id));
+          if (this.options.onClose) {
+            this.options.onClose();
+          }
+          Event.fire('window_close', this.id);
           j(`${this.id} .nice`).getNiceScroll().remove();
           j(this.id).remove();
         },
@@ -377,9 +379,11 @@ export class Window {
       log(`Saving window position: #${id} ${stringify(windowState)}`);
     });
 
-    j.post('?option=com_portal&task=set_pref', {
-      pref: stringify(window.user.pref),
-    });
+    if (config.saveRemotePrefs) {
+      j.post('?option=com_portal&task=set_pref', {
+        pref: stringify(window.user.pref),
+      });
+    }
   }
 
   getPosition(options) {
@@ -397,7 +401,7 @@ export class Window {
 
     if (!prefs[this.viewId]?.[options.id]) {
       log(`no stored position for ${options.id}`);
-      log(prefs);
+      // log(prefs);
       return true;
     }
 

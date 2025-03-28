@@ -66,6 +66,8 @@ export class ScrollView {
       class: 'scroll-view nofade',
       master: !config.notrack,
       closeable: config.controlPanel,
+      drag: this.options.drag, // Enable dragging
+      snap: this.options.snap, // Enable snapping to other windows
     });
 
     if (this.mobile) {
@@ -450,16 +452,16 @@ export class ScrollView {
   }
 
   setupMacrosAndTriggers() {
-    config.MacroPane = new MacroPane({ socket: this.ws });
-    config.TriggerHappy = new TriggerHappy({ socket: this.ws });
-
-    if (!config.nomacros) {
+    if (config.macros) {
+      config.MacroPane = new MacroPane({ socket: this.ws });
+      config.MacroPane.initialize();
       Event.listen('before_send', config.MacroPane.sub);
       this.echo('Activating macros.');
     }
 
     if (!config.notriggers) {
-      Event.listen('after_display', config.TriggerHappy.respond);
+      config.TriggerHappy = new TriggerHappy({ socket: this.ws });
+      Event.listen('after_display', (msg) => config.TriggerHappy.respond(msg));
       this.echo('Activating triggers.');
     }
   }

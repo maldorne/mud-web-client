@@ -50,6 +50,8 @@ export class ChatterBox {
       class: 'nofade ui-group ChatterBox',
       css: this.options.css || null,
       handle: '.nav-tabs',
+      drag: this.options.drag, // Enable dragging
+      snap: this.options.snap, // Enable snapping to other windows
     });
 
     // Add an icon to the ScrollView window to hide/show the chat box

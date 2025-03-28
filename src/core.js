@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import { config } from './config.js';
 import { Modal } from './modal.js';
 import { Event } from './event.js';
-import { ControlPanel } from './control-panel.js';
+// import { ControlPanel } from './control-panel.js';
 import { ScrollView } from './scroll-view.js';
 import { Toolbar } from './toolbar.js';
 
@@ -78,6 +78,8 @@ export function initializeCore() {
           zIndex: 103,
         },
         scrollback: 40 * 1000,
+        drag: true, // Enable dragging
+        snap: true, // Enable snapping to other windows
       });
 
       if (!config.embed && !config.device.mobile && !config.kong) {
