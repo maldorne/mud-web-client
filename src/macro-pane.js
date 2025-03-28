@@ -1,5 +1,5 @@
 import jQuery from 'jquery';
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Window } from './window.js';
 import { log, stringify, param } from './utils.js';
 
@@ -7,12 +7,12 @@ const j = jQuery;
 
 export class MacroPane {
   constructor(options) {
-    if (Config.nomacros) return;
+    if (config.nomacros) return;
 
     this.id = '#macro-pane';
     this.socket = options.socket;
-    this.host = Config.host;
-    this.port = Config.port;
+    this.host = config.host;
+    this.port = config.port;
     this.buttons = [];
     this.first = true;
 
@@ -56,7 +56,8 @@ export class MacroPane {
 
     this.socket.echo(`Loaded ${this.buttons.length} macros.`);
 
-    if (hasFavorites && !this.options?.noquickbuttons && !Config.nocenter) {
+    // if (hasFavorites && !this.options?.noquickbuttons && !config.nocenter) {
+    if (hasFavorites && !this.options?.noquickbuttons) {
       this.createPane();
     }
 
@@ -64,7 +65,7 @@ export class MacroPane {
   }
 
   createPane() {
-    if (Config.device.mobile) return;
+    if (config.device.mobile) return;
 
     j(this.id).remove();
 
@@ -123,7 +124,7 @@ export class MacroPane {
   }
 
   processCommand(message) {
-    if (Config.nomacros) return message;
+    if (config.nomacros) return message;
 
     log(`MacroPane.sub: ${this.buttons.length}`);
 

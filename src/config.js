@@ -18,7 +18,7 @@ export class Config {
     this.left = false;
     this.clean = false;
     this.solo = false;
-    this.nocenter = false;
+    // this.nocenter = false;
     this.notrack = false;
     this.nodrag = false;
     this.embed = false;
@@ -33,6 +33,7 @@ export class Config {
     this.chatterbox = false;
     this.chatterboxConfig = null;
     this.settings = [];
+    this.controlPanel = false;
 
     // Device detection
     this.device = {
@@ -120,8 +121,8 @@ export class Config {
     this.left = param('left') || this.left;
     this.clean = window.location.search.includes('clean') || this.clean;
     this.solo = window.location.search.includes('solo') || this.solo;
-    this.nocenter =
-      window.location.search.includes('nocenter') || this.nocenter;
+    // this.nocenter =
+    //   window.location.search.includes('nocenter') || this.nocenter;
     this.notrack = param('notrack') || this.notrack;
     this.nodrag = param('nodrag') || this.nodrag;
     this.embed = param('embed') || this.embed;
@@ -134,6 +135,7 @@ export class Config {
     this.uncompressed = param('uncompressed') || this.uncompressed;
     this.useMuProtocol = param('useMuProtocol') || this.useMuProtocol;
     this.chatterbox = param('chatterbox') || this.chatterbox;
+    this.controlPanel = param('controlPanel') || this.controlPanel;
 
     // Update settings and view
     this.settings = this.getSettings();

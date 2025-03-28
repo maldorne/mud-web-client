@@ -24,6 +24,7 @@ export const Event = {
     scrollview_ready: [],
     scrollview_add: [],
     chatterbox_ready: [],
+    controlpanel_ready: [],
     will_msdp: [],
     msdp: [],
     will_gmcp: [],

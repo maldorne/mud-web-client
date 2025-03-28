@@ -67,8 +67,6 @@ export function initializeCore() {
   }
 
   if (!config.nocore) {
-    if (!config.nocenter) config.ControlPanel = new ControlPanel();
-
     if (config.host && config.port) {
       new ScrollView({
         local: true,

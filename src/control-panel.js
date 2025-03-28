@@ -1,8 +1,9 @@
+/* eslint-disable no-control-regex */
 import jQuery from 'jquery';
-import { Config } from './config.js';
+import { config } from './config.js';
 import { Event } from './event.js';
 import { Window } from './window.js';
-import { Modal } from './modal.js';
+// import { Modal } from './modal.js';
 import { Socket } from './socket.js';
 import { log, stringify, param } from './utils.js';
 
@@ -11,22 +12,25 @@ const j = jQuery;
 export class ControlPanel {
   constructor() {
     if (!window.user) return;
+    if (this.touch && param('host')) return;
 
     this.id = '#control-panel';
-    this.mobile = Config.device.mobile;
-    this.touch = Config.device.touch;
+    this.mobile = config.device.mobile;
+    this.touch = config.device.touch;
     this.chatlog = [];
     this.mychannel = null;
     this.nice = null;
     this.sound = false;
-    this.sitelist = window.sitelist;
+    // this.sitelist = window.sitelist;
     this.pref = window.user.pref;
 
-    if (this.touch && param('host')) return;
+    this.exposeToConfig();
+  }
 
+  async initialize() {
     this.initWindow();
     this.initLayout();
-    this.loadGamelist();
+    await this.loadGamelist();
     this.initEventListeners();
     this.initChat();
 
@@ -88,7 +92,7 @@ export class ControlPanel {
     if (!this.pref.profiles) return;
 
     Object.entries(this.pref.profiles).forEach(([profileName, profile]) => {
-      if ((Config.clean || Config.solo) && Config.host !== profile.host)
+      if ((config.clean || config.solo) && config.host !== profile.host)
         return;
 
       const gameIndex = this.sitelist.findIndex(
@@ -109,10 +113,11 @@ export class ControlPanel {
     });
   }
 
-  loadMudconnectList() {
-    if (Config.solo || Config.clean || this.touch) return;
+  async loadMudconnectList() {
+    if (config.solo || config.clean || this.touch) return;
 
-    j.get('/app/xml/mudconnect.xml', (data) => {
+    try {
+      // Add the TMC section header
       j(`${this.id} .gamelist .profiles`).after(`
         <div class="tmc">
           <a class="tmc-list folder">
@@ -121,16 +126,24 @@ export class ControlPanel {
         </div>
       `);
 
-      const muds = Array.from(j(data).find('mud')).sort((a, b) => {
-        const titleA = j(a).find('title').text();
-        const titleB = j(b).find('title').text();
+      // Fetch and parse XML
+      const response = await fetch('/mudconnect/mudconnect.xml');
+      const text = await response.text();
+      const parser = new DOMParser();
+      const data = parser.parseFromString(text, 'text/xml');
+
+      // Convert NodeList to Array and sort
+      const muds = Array.from(data.querySelectorAll('mud')).sort((a, b) => {
+        const titleA = a.querySelector('title').textContent;
+        const titleB = b.querySelector('title').textContent;
         return titleA.localeCompare(titleB);
       });
 
+      // Process each MUD entry
       muds.forEach((mud) => {
-        const name = j(mud).find('title').text();
-        const host = j(mud).find('host').text();
-        const port = j(mud).find('port').text();
+        const name = mud.querySelector('title').textContent;
+        const host = mud.querySelector('host').textContent;
+        const port = mud.querySelector('port').textContent;
 
         if (name && host && port) {
           j(`${this.id} .gamelist .tmc`).append(`
@@ -145,10 +158,12 @@ export class ControlPanel {
           `);
         }
       });
-    });
+    } catch (error) {
+      log('Error loading mudconnect.xml:', error);
+    }
   }
 
-  loadSiteList() {
+  async loadSiteList() {
     j(`${this.id} .gamelist`).append(`
       <div class="sitelist">
         <a class="big-list folder" data="game-link">
@@ -157,48 +172,66 @@ export class ControlPanel {
       </div>
     `);
 
-    this.sitelist.forEach((game, index) => {
-      try {
-        const elements = game.elements.replace(/&amp;/g, '&');
-        const playMatch = elements.match(/\[play=(.+?)\]/);
-        if (!playMatch) return;
+    try {
+      // Fetch the sitelist from our local file
+      const response = await fetch('/sitelist/sitelist.json');
+      const sitelist = await response.json();
 
-        const play = playMatch[1].replace(/\\\//g, '/');
+      sitelist.forEach((game, index) => {
+        try {
+          const elements = game.elements?.replace(/&amp;/g, '&');
+          if (!elements) return;
 
-        if (!play.includes('http')) {
-          const [host, port] = play.split(':');
-          game.host = host;
-          game.port = port;
-        } else {
-          game.host = play.param('host');
-          game.port = play.param('port');
+          const playMatch = elements.match(/\[play=(.+?)\]/);
+          if (!playMatch) return;
+
+          const play = playMatch[1].replace(/\\\//g, '/');
+
+          if (!play.includes('http')) {
+            const [host, port] = play.split(':');
+            game.host = host;
+            game.port = port;
+          } else {
+            game.host = play.param('host');
+            game.port = play.param('port');
+          }
+
+          // Use the host/port from the game object if play pattern wasn't found
+          if (!game.host || !game.port) {
+            if (game.host && game.port) {
+              // Use the values directly from the JSON
+            } else {
+              log('Skipping game:', stringify(game));
+              return;
+            }
+          }
+
+          if ((config.clean || config.solo) && config.host !== game.host)
+            return;
+
+          // Handle image path
+          let imgPath = game.img;
+          if (imgPath && !imgPath.startsWith('/')) {
+            imgPath = '/' + imgPath;
+          }
+
+          j(`${this.id} .sitelist`).append(`
+            <a class="game-link" 
+               data="${index}" 
+               host="${game.host}" 
+               port="${game.port}" 
+               thumb="${imgPath}" 
+               name="${game.name}">
+              <i class="icon-sun"></i> ${game.name}<br>
+            </a>
+          `);
+        } catch (error) {
+          log('Error processing game:', error, game);
         }
-
-        if (!game.host || !game.port) {
-          log('Skipping game:', stringify(game));
-          return;
-        }
-
-        if ((Config.clean || Config.solo) && Config.host !== game.host) return;
-
-        const imgMatch = elements.match(/"(images\\\/.+?\.(png|gif|jpg))"/i);
-        game.img = '/' + imgMatch[1].replace(/\\\//g, '/');
-
-        j(`${this.id} .sitelist`).append(`
-          <a class="game-link" 
-             data="${index}" 
-             host="${game.host}" 
-             port="${game.port}" 
-             thumb="${game.img}" 
-             name="${game.name}">
-            <i class="icon-sun"></i> ${game.name}<br>
-          </a>
-        `);
-      } catch (error) {
-        log(game);
-        console.error(error);
-      }
-    });
+      });
+    } catch (error) {
+      log('Error loading sitelist.json:', error);
+    }
   }
 
   loadChat() {
@@ -221,10 +254,10 @@ export class ControlPanel {
     });
   }
 
-  loadGamelist() {
+  async loadGamelist() {
     j(`${this.id} .gamelist`).empty();
-    this.loadSiteList();
-    this.loadMudconnectList();
+    await this.loadSiteList();
+    await this.loadMudconnectList();
     this.loadProfiles();
     this.loadChat();
   }
@@ -233,13 +266,13 @@ export class ControlPanel {
     this.initDoubleClickHandler();
     this.initFolderClickHandler();
     this.initGameLinkHandler();
-    this.initMacroHandlers();
-    this.initTriggerHandlers();
-    this.initIconHandlers();
-    this.initSaveHandler();
-    this.initCloneHandler();
-    this.initDeleteHandler();
-    this.initChatHandlers();
+    // this.initMacroHandlers();
+    // this.initTriggerHandlers();
+    // this.initIconHandlers();
+    // this.initSaveHandler();
+    // this.initCloneHandler();
+    // this.initDeleteHandler();
+    // this.initChatHandlers();
   }
 
   initDoubleClickHandler() {
@@ -439,16 +472,16 @@ export class ControlPanel {
       `);
     });
 
-    if (gameSettings?.settings) {
-      gameSettings.settings.forEach((setting) => {
-        const $icon = j(`${this.id} #settings #${setting.id}`);
-        $icon.toggleClass('icon-check icon-unchecked', !setting.value);
-      });
-    }
+    // if (gameSettings?.settings) {
+    //   gameSettings.settings.forEach((setting) => {
+    //     const $icon = j(`${this.id} #settings #${setting.id}`);
+    //     $icon.toggleClass('icon-check icon-unchecked', !setting.value);
+    //   });
+    // }
 
     j('.gamepanel .scroll').css({ height: '280px' });
 
-    if (!Config.touch) {
+    if (!config.touch) {
       j('.gamepanel .scroll').niceScroll({
         cursorborder: 'none',
         cursorwidth: '7px',
@@ -607,11 +640,11 @@ export class ControlPanel {
       '$1<a href="$2" target="_blank">$2</a>',
     );
   }
-}
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  if (Config.ControlPanel) {
-    new ControlPanel();
+  exposeToConfig() {
+    config.ControlPanel = this;
+    setTimeout(() => {
+      Event.fire('controlpanel_ready', this);
+    }, 500);
   }
-});
+}
