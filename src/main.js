@@ -9,6 +9,7 @@ import './modal-input.js'; // ModalInput module
 import { ChatterBox } from './chatter-box.js'; // ChatterBox module
 import { ControlPanel } from './control-panel.js'; // ControlPanel module
 import { GroupTab } from './group-tab.js'; // GroupTab module
+import { IFrame } from './iframe.js';
 
 window.jQuery = window.$ = jQuery;
 
@@ -32,5 +33,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (config.groupTab) {
     let gt = new GroupTab();
     await gt.initialize();
+  }
+
+  if (config.initialIFrame) {
+    log('Loading initial URL:', config.initialURL);
+
+    const helpFrame = new IFrame({
+      id: '#help-frame',
+      title: config.initialIFrame.title || 'Help',
+      url: config.initialIFrame.URL,
+      // refresh: 30, // refresh every 30 seconds
+      css: {
+        width: 800,
+        height: 600,
+        top: 0,
+        left: '30%',
+      },
+      handle: '.handle', // Use the default Window handle class
+      drag: true, // Enable dragging
+      snap: true, // Enable snapping to other windows
+    });
+
+    helpFrame.initialize();
   }
 });

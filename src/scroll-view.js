@@ -65,7 +65,7 @@ export class ScrollView {
       css: this.options.css,
       class: 'scroll-view nofade',
       master: !config.notrack,
-      closeable: config.ControlPanel,
+      closeable: config.controlPanel,
     });
 
     if (this.mobile) {
@@ -185,7 +185,7 @@ export class ScrollView {
   setupContent() {
     const spellcheck = config.getSetting('spellcheck');
 
-    j(`${this.id} .tab-content`).append(`
+    j(`${this.id} .content`).html(`
       <div class="out nice"></div>
       <div class="input">
         <input class="send" 

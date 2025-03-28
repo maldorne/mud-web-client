@@ -35,6 +35,7 @@ export class Config {
     this.settings = [];
     this.controlPanel = false;
     this.groupTab = false;
+    this.initialIFrame = null;
 
     // Device detection
     this.device = {
@@ -138,6 +139,20 @@ export class Config {
     this.chatterbox = param('chatterbox') || this.chatterbox;
     this.controlPanel = param('controlPanel') || this.controlPanel;
     this.groupTab = param('groupTab') || this.groupTab;
+
+    if (param('initialURL')) {
+      let url = param('initialURL');
+      // If it's a partial URL, add https://
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      // Validate URL
+      new URL(url);
+      this.initialIFrame = {
+        ...this.initialIFrame,
+        URL: url,
+      };
+    }
 
     // Update settings and view
     this.settings = this.getSettings();

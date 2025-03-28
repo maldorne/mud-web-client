@@ -69,5 +69,9 @@
     ]
   },
   "controlPanel": false,
-  "groupTab": false
+  "groupTab": false,
+  "initialIFrame": {
+    "URL": "https://www.maldorne.org",
+    "title": "Asociación Maldorne"
+  }
 }

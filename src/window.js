@@ -78,7 +78,10 @@ export class Window {
     this.setupStyles();
     this.setupResizable();
     this.setupPosition();
-    this.setupTabsStructure();
+    // Only setup tabs if needed
+    if (this.options.tabs?.length > 0) {
+      this.setupTabsStructure();
+    }
 
     this.bringToFront(false);
 
@@ -220,33 +223,42 @@ export class Window {
     }
 
     j(this.id).draggable({
-      handle: this.options.handle,
-      snap: true,
-      iFrameFix: this.options.iframe ? true : false,
+      handle: this.options.handle || '.handle',
+      snap: this.options.snap || false,
+      iframeFix: this.options.iframe || false,
+      scroll: false,
+      cursor: 'move',
+      containment: 'window',
+      stack: '.window',
       start: (e, ui) => {
+        // Add dragging class
+        j(this.id).addClass('ui-draggable-dragging');
         this.wasAt = ui.position;
-        j(this.id).css({ bottom: '', right: '' });
+      },
+      drag: (e, ui) => {
+        // Keep window within viewport bounds
+        const window_width = j(window).width();
+        const window_height = j(window).height();
+        const width = j(this.id).width();
+        const height = j(this.id).height();
+
+        ui.position.left = Math.max(
+          0,
+          Math.min(ui.position.left, window_width - width),
+        );
+        ui.position.top = Math.max(
+          0,
+          Math.min(ui.position.top, window_height - height),
+        );
       },
       stop: (e, ui) => {
-        if (this.options.master) {
-          j('.window')
-            .not('#scroll-view')
-            .animate(
-              {
-                top: `-=${this.wasAt.top - ui.position.top}px`,
-                left: `-=${this.wasAt.left - ui.position.left}px`,
-              },
-              () => {
-                this.resize();
-                this.savePosition();
-              },
-            );
-          return;
-        }
-        this.resize();
+        j(this.id).removeClass('ui-draggable-dragging');
         this.savePosition();
       },
     });
+
+    // Add CSS to handle element
+    j(`${this.id} ${this.options.handle || '.handle'}`).css('cursor', 'move');
   }
 
   resize() {
