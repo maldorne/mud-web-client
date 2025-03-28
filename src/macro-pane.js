@@ -10,6 +10,10 @@ export class MacroPane {
   constructor(options = {}) {
     if (!config.macros) return;
 
+    this.options = {
+      ...options,
+    };
+
     this.id = '#macro-pane';
     this.socket = config.socket;
     this.host = config.host;

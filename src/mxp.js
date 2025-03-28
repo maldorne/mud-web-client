@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 import jQuery from 'jquery';
 import { config } from './config.js'; // Change this line
 import { Event } from './event.js';

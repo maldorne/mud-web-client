@@ -49,3 +49,10 @@
 .ChatterBox .footer {
   background-color: rgba(0, 0, 0, 1);
 }
+
+/* Add font styling for tab content */
+.ChatterBox .tab-content .content {
+  font-family: "Lucida Console","DejaVu Sans Mono",FreeMono,"Open Sans",Arial,Helvetica,sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+}
