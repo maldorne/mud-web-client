@@ -41,6 +41,7 @@ export class Config {
     this.useFakeUser = false;
     this.fakeUser = null;
     this.saveRemotePrefs = false;
+    this.loginPrompt = false;
 
     // Device detection
     this.device = {
@@ -153,6 +154,7 @@ export class Config {
     this.triggers = param('triggers') || this.triggers;
     this.useFakeUser = param('useFakeUser') || this.useFakeUser;
     this.saveRemotePrefs = param('saveRemotePrefs') || this.saveRemotePrefs;
+    this.loginPrompt = param('loginPrompt') || this.loginPrompt;
 
     if (param('initialURL')) {
       let url = param('initialURL');

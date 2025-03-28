@@ -138,5 +138,6 @@
       "channel": "Lobby"
     },
     "channel": "Lobby"
-  }  
+  },
+  "loginPrompt": false
 }

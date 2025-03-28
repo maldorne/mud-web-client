@@ -72,9 +72,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   //   listen: 'custom-event',
   // });
 
-  const loginPrompt = new LoginPrompt({
-    gmcp: true,
-    placeholder: 'Username',
-    // ... other options
-  });
+  if (config.loginPrompt) {
+    new LoginPrompt({
+      gmcp: true,
+      placeholder: 'Username',
+      // ... other options
+    });
+  }
 });
