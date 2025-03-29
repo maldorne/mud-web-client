@@ -68,13 +68,14 @@
       }
     ]
   },
-  "controlPanel": true,
+  "controlPanel": false,
   "groupTab": false,
   "initialIFrame": {
     "URL": "https://www.maldorne.org",
     "title": "Asociación Maldorne"
   },
-  "macros": true,
+  "macros": false,
+  "triggers": false,
   "useFakeUser": true,
   "fakeUser": {
     "id": "test-user-1",
@@ -158,5 +159,13 @@
       "channel": "Lobby"
     },
     "channel": "Lobby"
-  }
+  },
+  "loginPrompt": false,
+  "mapper": false,
+  "havoc": false,
+  "havocMapper": false,
+  "misty": false,
+  "gui": false,
+  "fb": false,
+  "fbAppId": null
 }

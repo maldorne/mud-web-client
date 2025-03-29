@@ -54,6 +54,7 @@
   "controlPanel": false,
   "groupTab": false,
   "macros": false,
+  "triggers": false,
   "useFakeUser": true,
   "fakeUser": {
     "id": "test-user-1",
@@ -137,5 +138,13 @@
       "channel": "Lobby"
     },
     "channel": "Lobby"
-  }  
+  },
+  "loginPrompt": false,
+  "mapper": false,
+  "havoc": false,
+  "havocMapper": false,
+  "misty": false,
+  "gui": true,
+  "fb": false,
+  "fbAppId": null
 }
