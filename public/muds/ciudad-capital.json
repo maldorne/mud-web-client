@@ -165,5 +165,7 @@
   "havoc": false,
   "havocMapper": false,
   "misty": false,
-  "gui": true
+  "gui": false,
+  "fb": false,
+  "fbAppId": null
 }

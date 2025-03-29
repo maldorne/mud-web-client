@@ -47,6 +47,8 @@ export class Config {
     this.havocMapper = false;
     this.misty = false;
     this.gui = true;
+    this.fb = false;
+    this.fbAppId = null;
 
     // Device detection
     this.device = {
@@ -165,6 +167,8 @@ export class Config {
     this.havocMapper = param('havocMapper') || this.havocMapper;
     this.misty = param('misty') || this.misty;
     this.gui = param('gui') || this.gui;
+    this.fb = param('fb') || this.fb;
+    this.fbAppId = param('fbAppId') || this.fbAppId;
 
     if (param('initialURL')) {
       let url = param('initialURL');

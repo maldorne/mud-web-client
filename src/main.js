@@ -15,6 +15,7 @@ import { LoginPrompt } from './login-prompt.js';
 import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
 import { Havoc } from './havoc-core.js'; // Havoc module
 import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
+import { Facebook } from './fb.js';
 
 window.jQuery = window.$ = jQuery;
 
@@ -125,5 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         snap: true, // Enable snapping to other windows
       });
     }
+  }
+
+  if (config.fb) {
+    Facebook.initialize();
   }
 });
