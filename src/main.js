@@ -10,9 +10,11 @@ import { ChatterBox } from './chatter-box.js'; // ChatterBox module
 import { ControlPanel } from './control-panel.js'; // ControlPanel module
 import { GroupTab } from './group-tab.js'; // GroupTab module
 import { IFrame } from './iframe.js';
-// import { MistyBars } from './misty-bars.js'; // MistyBars module
+import { MistyBars } from './misty-bars.js'; // MistyBars module
 import { LoginPrompt } from './login-prompt.js';
 import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
+import { Havoc } from './havoc-core.js'; // Havoc module
+import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
 
 window.jQuery = window.$ = jQuery;
 
@@ -68,11 +70,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     helpFrame.initialize();
   }
 
-  // const bars = new MistyBars({
-  //   title: 'Custom Bars',
-  //   listen: 'custom-event',
-  // });
-
   if (config.loginPrompt) {
     new LoginPrompt({
       gmcp: true,
@@ -93,5 +90,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       drag: true, // Enable dragging
       snap: true, // Enable snapping to other windows
     });
+  }
+
+  if (config.misty) {
+    new MistyBars({
+      title: 'Custom Bars',
+      listen: 'custom-event',
+    });
+  }
+
+  if (config.havoc) {
+    new Havoc({
+      title: 'Havoc',
+      css: {
+        width: 800,
+        height: 600,
+        top: 0,
+        left: '30%',
+      },
+      drag: true, // Enable dragging
+      snap: true, // Enable snapping to other windows
+    });
+    // Initialize HavocMapper if configured
+    if (config.havocMapper) {
+      new HavocMapper({
+        title: 'Havoc Mapper',
+        css: {
+          width: 800,
+          height: 600,
+          top: 0,
+          left: '30%',
+        },
+        drag: true, // Enable dragging
+        snap: true, // Enable snapping to other windows
+      });
+    }
   }
 });

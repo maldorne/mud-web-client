@@ -140,5 +140,9 @@
     "channel": "Lobby"
   },
   "loginPrompt": false,
-  "mapper": false
+  "mapper": false,
+  "havoc": false,
+  "havocMapper": false,
+  "misty": false,
+  "gui": true
 }

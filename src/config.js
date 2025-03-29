@@ -43,6 +43,10 @@ export class Config {
     this.saveRemotePrefs = false;
     this.loginPrompt = false;
     this.mapper = false;
+    this.havoc = false;
+    this.havocMapper = false;
+    this.misty = false;
+    this.gui = true;
 
     // Device detection
     this.device = {
@@ -157,6 +161,10 @@ export class Config {
     this.saveRemotePrefs = param('saveRemotePrefs') || this.saveRemotePrefs;
     this.loginPrompt = param('loginPrompt') || this.loginPrompt;
     this.mapper = param('mapper') || this.mapper;
+    this.havoc = param('havoc') || this.havoc;
+    this.havocMapper = param('havocMapper') || this.havocMapper;
+    this.misty = param('misty') || this.misty;
+    this.gui = param('gui') || this.gui;
 
     if (param('initialURL')) {
       let url = param('initialURL');

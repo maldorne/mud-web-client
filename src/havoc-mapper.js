@@ -1,330 +1,284 @@
 /* Havoc (c) 2014 */
 
-var Mapper = function (o) {
-  var self = this,
-    path = o.path || 'http://' + Config.host + '/world/',
-    nice,
-    data = {},
-    map,
-    marker,
-    win,
-    img,
-    was = { zone: '' },
-    title,
-    tile = 72 * (o.scale || 0.75);
+import jQuery from 'jquery';
+// import { Event } from './event.js';
+import { config } from './config.js';
+import { Window } from './window.js';
+import { log, param } from './utils.js';
 
-  var H,
-    W,
-    iH,
-    iW,
-    xOffset = Math.floor(tile / 6),
-    yOffset = Math.floor(tile / 2);
+const j = jQuery;
 
-  var mymaps = ['Calandor.map', 'Calandor Temple.map'];
-
-  var myimages = [
-    '/aaralon/images/AaralonSplash.jpg',
-    '/aaralon/world/Calandor.jpg',
-    '/aaralon/world/Calandor Temple.jpg',
-  ];
-
-  var ani = {
-    '^Vwm': {
-      img: path + 'core/images/scenery/windmill-',
-      frames: [
-        '01',
-        '02',
-        '03',
-        '04',
-        '05',
-        '06',
-        '07',
-        '08',
-        '09',
-        '10',
-        '11',
-        '12',
-        '13',
-        '14',
-        '15',
-        '16',
-        '17',
-        '18',
-      ],
-    },
-    '^Ze': {
-      img: path + 'core/images/scenery/fire',
-      frames: ['1', '2', '3', '4', '5', '6', '7', '8'],
-    },
-  };
-
-  var animate = function (d) {
-    if (!d.terrain) return;
-
-    var a = null;
-
-    j('.ani').animateSprite('stop').remove();
-
-    for (var i in ani) if (d.terrain.has(i)) a = ani[i];
-
-    if (!a) return;
-
-    j(map).append(
-      '<img class="ani" src="' + a.img + a.frames[0] + '.png' + '">',
-    );
-
-    j('.ani').css(getpos(was));
-
-    j('.ani').animateSprite({
-      columns: a.frames.length,
-      fps: 12,
-      loop: true,
-      animations: {
-        run: a.frames,
+export class HavocMapper {
+  constructor(options = {}) {
+    this.options = {
+      path: `http://${config.host}/world/`,
+      scale: 0.75,
+      id: '#havoc-mapper',
+      css: {
+        height: 400,
+        width: 400,
+        top: 400,
+        left: config.width,
       },
-    });
+      ...options,
+    };
 
-    j('.ani').animateSprite('play', 'run');
-  };
+    this.data = {};
+    this.was = { zone: '' };
+    this.tile = 72 * this.options.scale;
+    this.xOffset = Math.floor(this.tile / 6);
+    this.yOffset = Math.floor(this.tile / 2);
 
-  var loadZone = function (z) {
-    loadImage(path + z + '.jpg', img);
+    this.maps = ['Calandor.map', 'Calandor Temple.map'];
+    this.images = [
+      '/aaralon/images/AaralonSplash.jpg',
+      '/aaralon/world/Calandor.jpg',
+      '/aaralon/world/Calandor Temple.jpg',
+    ];
 
-    if (data[z]) {
-    }
-  };
+    this.animations = {
+      '^Vwm': {
+        img: this.options.path + 'core/images/scenery/windmill-',
+        frames: Array.from({ length: 18 }, (_, i) =>
+          String(i + 1).padStart(2, '0'),
+        ),
+      },
+      '^Ze': {
+        img: this.options.path + 'core/images/scenery/fire',
+        frames: Array.from({ length: 8 }, (_, i) => String(i + 1)),
+      },
+    };
 
-  var loadMaps = function () {
-    mymaps.forEach(function (i) {
+    this.initialize();
+  }
+
+  initialize() {
+    this.loadMaps();
+    this.preloadImages();
+    this.setupDomElements();
+    this.initializeWindow();
+    this.setupEventListeners();
+  }
+
+  loadMaps() {
+    this.maps.forEach((mapFile) => {
       j.get(
-        path + i,
-        function (d) {
-          var z = i.split('.')[0];
+        this.options.path + mapFile,
+        (data) => {
+          const zone = mapFile.split('.')[0];
+          this.data[zone] = data
+            .replace(/[ \t]/g, '')
+            .split('\n')
+            .slice(3, -1)
+            .map((line) => line.split(','));
 
-          data[z] = d.replace(/[ \t]/g, '').split('\n').slice(3, -1);
-          data[z] = data[z].map(function (i) {
-            return i.split(',');
-          });
-
-          console.log(data);
+          log('Map data loaded:', this.data);
         },
         'text',
       );
     });
-  };
+  }
 
-  var loadImage = function (src, target) {
-    return j(target).attr('src', src);
-  };
-
-  var setTitle = function (t) {
-    title = (was.id || was.zone) + ': ' + was.x + 'x' + was.y + ' ' + t.name;
-    win.setTitle(title);
-    j(marker).attr('title', title);
-  };
-
-  var setPortals = function (p) {
-    j(o.id + ' #portals').empty();
-  };
-
-  var go = function (at) {
-    at = at || was;
-
-    if (was.zone != at.zone) {
-      loadZone(at.proto || at.zone);
-      setTimeout(go, 1500);
-    }
-
-    iW = j(img).width();
-    iH = j(img).height();
-
-    log('iW: ' + iW + ' iH: ' + iH);
-
-    W = j(map).width();
-    H = j(map).height();
-
-    var pos = getpos(at);
-
-    j(marker).css(pos).show();
-
-    var x = pos.left + tile / 2 - W / 2;
-    var y = pos.top + tile / 2 - H / 2;
-
-    if (x < 0) x = 0;
-
-    if (y < 0) y = 0;
-
-    if (x + W > iW) x = iW - W;
-
-    if (y + H > iH) y = iH - H;
-
-    j(map).scrollLeft(x).scrollTop(y);
-    was = at;
-
-    log(
-      'mapper.go: scrolled to: x' +
-        j(map).scrollLeft() +
-        ' y' +
-        j(map).scrollTop(),
-    );
-
-    !nice || nice.resize();
-
-    if (!o.mini) {
-      //animate(at);
-      home(at);
-    }
-
-    return self;
-  };
-
-  var init = function () {
-    loadMaps();
-
-    myimages.forEach(function (i) {
-      j('<img/>')[0].src = i;
+  preloadImages() {
+    this.images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
     });
+  }
 
-    map = o.id + ' .content';
-    img = map + ' #map';
-    marker = map + ' #marker';
+  setupDomElements() {
+    this.mapSelector = `${this.options.id} .content`;
+    this.imgSelector = `${this.mapSelector} #map`;
+    this.markerSelector = `${this.mapSelector} #marker`;
 
-    o.css = o.css || {
-      height: 400,
-      width: 400,
-      top: 400,
-      left: Config.width,
-    };
+    j(this.mapSelector).html(`
+      <img id="map" 
+           class="pointer" 
+           style="max-width: none; max-height: none; z-index: 1; position: absolute" 
+           oncontextmenu="return false;">
+      <img id="marker" 
+           class="tip" 
+           style="width: 54px; height: 54px; z-index: 2; position: absolute; display: none" 
+           src="/aaralon/images/brush.png">
+    `);
 
-    win = new Window({
-      id: o.id,
+    j(this.options.id).prepend(`
+      <div class="inbar" style="position: absolute; top: 0px; left: 0px; z-index: 2; height: 20px; width: 100%; text-align: center;">
+        <div class="title" style="white-space: nowrap; text-overflow: ellipsis; font-size: ${this.options.mini ? 10 : 13}px;"></div>
+      </div>
+    `);
+  }
+
+  initializeWindow() {
+    this.window = new Window({
+      id: this.options.id,
       title: 'HavocMapper',
       class: 'nofade nofront',
       handle: '.inbar',
-      css: o.css,
-      onResize: function () {
-        go(was);
-      },
+      css: this.options.css,
+      onResize: () => this.go(this.was),
     });
 
-    j(map).html(
-      '\
-			<img id="map" class="pointer" style="max-width: none; max-height: none; z-index: 1; position: absolute" oncontextmenu="return false;">\
-			<img id="marker" class="tip" style="width: 54px; height: 54px; z-index: 2; position: absolute; display: none" src="/aaralon/images/brush.png"></img>\
-		',
-    );
+    this.loadImage(this.options.path + 'Calandor.jpg', this.imgSelector);
 
-    j(o.id).prepend(
-      '<div class="inbar" style="position: absolute; top: 0px; left: 0px; z-index: 2; height: 20px; width: 100%; text-align: center;">\
-			<div class="title" style="white-space: nowrap; text-overflow: ellipsis; font-size: ' +
-        (o.mini ? 10 : 13) +
-        'px;"></div>\
-		</div>',
-    );
+    j(`${this.options.id} .ui-resizable-handle`).css('zIndex', 3);
 
-    loadImage(path + 'Calandor.jpg', img);
-
-    j(o.id + ' .ui-resizable-handle').css('zIndex', 3);
-
-    nice = j(map)
+    this.niceScroll = j(this.mapSelector)
       .addClass('nice')
       .niceScroll({
-        //touchbehavior: 1,
         cursorborder: 'none',
         zindex: 3,
         cursorwidth: 8,
         railoffset: { top: -4, left: -4 },
       });
+  }
 
-    //if (o.mini)
-    //j(map).addClass('frame-left')
+  setupEventListeners() {
+    j(document).on('click', this.imgSelector, (e) => this.handleClick(e));
+  }
 
-    j(document).on('click', img, clicked);
-  };
+  loadImage(src, target) {
+    return j(target).attr('src', src);
+  }
 
-  var home = function (at) {
-    if (!param('gui')) return;
+  setTitle(info) {
+    const title = `${this.was.id || this.was.zone}: ${this.was.x}x${this.was.y} ${info.name}`;
+    this.window.setTitle(title);
+    j(this.markerSelector).attr('title', title);
+  }
 
-    if (
-      at.zone == 'Calandor' &&
-      at.x == 78 &&
-      at.y == 29 &&
-      j('#bar #home').text().has('recall')
-    )
-      j('#bar #home').html(
-        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> home',
-      );
-    else if (j('#bar #home').text().has('home'))
-      j('#bar #home').html(
-        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> recall',
-      );
-  };
+  animate(data) {
+    if (!data.terrain) return;
 
-  var getpos = function (at) {
+    j('.ani').animateSprite('stop').remove();
+
+    const animation = Object.entries(this.animations).find(([key]) =>
+      data.terrain.includes(key),
+    )?.[1];
+
+    if (!animation) return;
+
+    j(this.mapSelector).append(
+      `<img class="ani" src="${animation.img}${animation.frames[0]}.png">`,
+    );
+
+    j('.ani')
+      .css(this.getPosition(this.was))
+      .animateSprite({
+        columns: animation.frames.length,
+        fps: 12,
+        loop: true,
+        animations: {
+          run: animation.frames,
+        },
+      })
+      .animateSprite('play', 'run');
+  }
+
+  loadZone(zone) {
+    this.loadImage(`${this.options.path}${zone}.jpg`, this.imgSelector);
+  }
+
+  getPosition(at) {
     if (!at.x) return { left: 0, top: 0 };
 
-    var oddX = at.x % 2;
+    const oddX = at.x % 2;
+    const mX = this.xOffset + this.tile * 0.75 * at.x - this.tile / 2;
+    const mY = this.tile * at.y - this.tile / 2 + (!oddX ? this.yOffset : 0);
 
-    mX = xOffset + tile * 0.75 * at.x - tile / 2;
-    mY = tile * at.y - tile / 2 + (!oddX ? yOffset : 0);
-
-    log('mX: ' + mX + ' mY: ' + mY);
+    log(`Position - mX: ${mX} mY: ${mY}`);
     return { left: mX - 4, top: mY - 5 };
-  };
+  }
 
-  var update = function (d) {
-    if (!d || !d.start) return d;
+  go(at) {
+    at = at || this.was;
 
-    try {
-      if (d.start('ch.at ')) {
-        log('Havoc' + (o.mini ? '(mini)' : '') + 'Mapper.update at');
-
-        at = eval('(' + d.match(/[^]+? (.*)/)[1] + ')');
-        go(at);
-      } else if (d.start('room.info ')) {
-        log('HavocMapper.update room.info');
-        var t = eval('(' + d.match(/[^]+? (.*)/)[1] + ')');
-        setTitle(t);
-        animate(t);
-        if (t.portals) setPortals(t.portals);
-      }
-    } catch (err) {
-      log('Mapper gmcp parse error: ' + err);
+    if (this.was.zone !== at.zone) {
+      this.loadZone(at.proto || at.zone);
+      setTimeout(() => this.go(at), 1500);
+      return;
     }
 
-    return d;
-  };
+    const imgWidth = j(this.imgSelector).width();
+    const imgHeight = j(this.imgSelector).height();
+    const mapWidth = j(this.mapSelector).width();
+    const mapHeight = j(this.mapSelector).height();
 
-  var clicked = function (e) {
-    var offset = j(this).offset();
-    var x = e.clientX - offset.left;
-    var y = e.clientY - offset.top;
+    const pos = this.getPosition(at);
+    j(this.markerSelector).css(pos).show();
 
-    x -= xOffset * 2;
+    let x = pos.left + this.tile / 2 - mapWidth / 2;
+    let y = pos.top + this.tile / 2 - mapHeight / 2;
 
-    var mX = Math.round(x / (tile * 0.75));
+    x = Math.max(0, Math.min(x, imgWidth - mapWidth));
+    y = Math.max(0, Math.min(y, imgHeight - mapHeight));
 
-    if (!(mX % 2)) y -= yOffset - xOffset;
+    j(this.mapSelector).scrollLeft(x).scrollTop(y);
+    this.was = at;
 
-    var mY = Math.round(y / tile);
+    this.niceScroll?.resize();
 
-    console.log('mX: ' + mX + ' mY: ' + mY);
+    if (!this.options.mini) {
+      this.animate(at);
+      this.checkHome(at);
+    }
 
-    if (Config.socket) Config.socket.write('travel ' + mX + ' ' + mY);
-  };
+    return this;
+  }
 
-  init();
+  checkHome(at) {
+    if (!param('gui')) return;
 
-  var self = {
-    update: update,
-    win: win,
-    go: go,
-  };
+    const isHome = at.zone === 'Calandor' && at.x === 78 && at.y === 29;
+    const homeButton = j('#bar #home');
 
-  return self;
-};
+    if (isHome && homeButton.text().includes('recall')) {
+      homeButton.html('<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> home');
+    } else if (!isHome && homeButton.text().includes('home')) {
+      homeButton.html(
+        '<img src="/bedlam/art/cache/ui/cmdrent@2x.png"> recall',
+      );
+    }
+  }
 
-if (param('havoc') && param('map') != '0') {
-  Config.Mapper = new Mapper({ id: '#havoc-mapper' });
-  Event.listen('gmcp', Config.Mapper.update);
+  handleClick(event) {
+    const offset = j(event.target).offset();
+    let x = event.clientX - offset.left;
+    let y = event.clientY - offset.top;
+
+    x -= this.xOffset * 2;
+    const mX = Math.round(x / (this.tile * 0.75));
+
+    if (!(mX % 2)) {
+      y -= this.yOffset - this.xOffset;
+    }
+
+    const mY = Math.round(y / this.tile);
+    log(`Click - mX: ${mX} mY: ${mY}`);
+
+    if (config.socket) {
+      config.socket.write(`travel ${mX} ${mY}`);
+    }
+  }
+
+  update(data) {
+    if (!data?.start) return data;
+
+    try {
+      if (data.startsWith('ch.at ')) {
+        log(`Havoc${this.options.mini ? '(mini)' : ''}Mapper.update at`);
+        const at = JSON.parse(data.match(/[^ ]+ (.*)/)[1]);
+        this.go(at);
+      } else if (data.startsWith('room.info ')) {
+        log('HavocMapper.update room.info');
+        const info = JSON.parse(data.match(/[^ ]+ (.*)/)[1]);
+        this.setTitle(info);
+        this.animate(info);
+      }
+    } catch (err) {
+      log('Mapper gmcp parse error:', err);
+    }
+
+    return data;
+  }
 }

@@ -180,7 +180,7 @@ export class Socket {
 
     if (config.base64) {
       try {
-        var bits = new Base64Reader(e.data);
+        var bits = new Base64Reader(data);
         var translator = new Utf8Translator(bits);
         var reader = new TextReader(translator);
         this.buffer += reader.readToEnd();
