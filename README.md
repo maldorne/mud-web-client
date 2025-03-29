@@ -90,3 +90,9 @@ The values in `src/config.js` are now used as fallbacks when:
   * v1 ([@plamzi](https://github.com/plamzi)): Original version [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App).
   * v2 ([@neverbot](https://github.com/neverbot)): Added support for `wss://` connections. Separated the client and [proxy-server code](https://github.com/maldorne/mud-web-proxy).
   * v3 ([@neverbot](https://github.com/neverbot)): Ported to ES modules and Vite. Updated all dependencies. 
+
+## Note about integration modules
+
+The legacy integration modules (havoc, juju mapper, etc.) from the `src-old` directory have been migrated to use ES modules syntax and can now be found in the main `src` directory. While the core functionality should remain intact, these modules have not been thoroughly tested with the new architecture. These features were primarily used in the play area of [mudportal.com](https://www.mudportal.com/play). If you need to use those features, maybe you will have to fix them yourself. If you're interested in using or improving those integration modules, you're welcome to test them, report issues, or submit pull requests. Set them up in you own JSON configuration file, and see if they work.
+
+All basic functionalities of the client have been thoroughly tested and should be working properly. Only the integration modules might need additional work.
