@@ -1,5 +1,6 @@
 {
   "name": "Example MUD",
+  "mudId": "example",
   "host": "mud.example.com",
   "port": "5000",
   "proxy": "wss://proxy.example.com:6200/",

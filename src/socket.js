@@ -78,20 +78,24 @@ export class Socket {
     this.connected = true;
 
     if (!this.options.proxy && this.options.type === 'telnet') {
-      this.ws.send(
-        stringify({
-          host: this.options.host,
-          port: this.options.port,
-          utf8: 1,
-          mxp: 1,
-          connect: 1,
-          mccp: config.device.mobile ? 0 : 1,
-          debug: config.debug,
-          client: this.options.client,
-          ttype: this.options.ttype,
-          name: window.user?.username || 'Guest',
-        }),
-      );
+      const connectMsg = {
+        host: this.options.host,
+        port: this.options.port,
+        utf8: 1,
+        mxp: 1,
+        connect: 1,
+        mccp: config.device.mobile ? 0 : 1,
+        debug: config.debug,
+        client: this.options.client,
+        ttype: this.options.ttype,
+        name: window.user?.username || 'Guest',
+      };
+
+      if (config.mudId) {
+        connectMsg.mud = config.mudId;
+      }
+
+      this.ws.send(stringify(connectMsg));
     }
 
     if (this.options.onOpen) {

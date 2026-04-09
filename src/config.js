@@ -28,6 +28,7 @@ export class Config {
     this.onfirst = false;
     this.separator = ';';
     this.proxy = 'wss://play.maldorne.org:6200/';
+    this.mudId = null;
     this.uncompressed = false;
     this.useMuProtocol = false;
     this.chatterbox = false;

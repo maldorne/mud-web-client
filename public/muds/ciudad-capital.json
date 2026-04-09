@@ -1,5 +1,6 @@
 {
   "name": "Ciudad Capital",
+  "mudId": "ciudad-capital",
   "host": "muds.maldorne.org",
   "port": "5010",
   "debug": false,
