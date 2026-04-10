@@ -53,14 +53,26 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     };
 
     ws.onmessage = (event: MessageEvent) => {
-      let bytes: Uint8Array;
+      let raw: string | ArrayBuffer;
       if (event.data instanceof ArrayBuffer) {
-        bytes = new Uint8Array(event.data);
+        raw = event.data;
       } else {
-        // String data (shouldn't happen with binaryType='arraybuffer')
-        const encoder = new TextEncoder();
-        bytes = encoder.encode(String(event.data));
+        raw = String(event.data);
       }
+
+      // Detect and skip JSON control messages from the proxy (chat, etc.)
+      // They start with '{' when decoded, while MUD data is raw bytes/text.
+      if (typeof raw === 'string') {
+        if (raw.startsWith('{')) return; // JSON control message, ignore for now
+        const encoder = new TextEncoder();
+        for (const fn of dataHandlers) fn(encoder.encode(raw));
+        return;
+      }
+
+      const bytes = new Uint8Array(raw);
+      // Check if this looks like a JSON control message (starts with 0x7B = '{')
+      if (bytes.length > 0 && bytes[0] === 0x7b) return;
+
       for (const fn of dataHandlers) fn(bytes);
     };
 
