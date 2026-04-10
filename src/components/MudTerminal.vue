@@ -89,6 +89,8 @@ onMounted(async () => {
       foreground: '#cccccc',
       cursor: '#cccccc',
       selectionBackground: '#44475a',
+      black: '#000000',
+      brightBlack: '#555555',
     },
     fontFamily: '"Cascadia Code", "Fira Code", "Consolas", monospace',
     fontSize: 14,
