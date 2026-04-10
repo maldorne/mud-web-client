@@ -1,6 +1,6 @@
 {
   "name": "mud-web-client",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Web-based MUD client (Vue 3 + xterm.js)",
   "type": "module",
   "keywords": [
@@ -32,22 +32,23 @@
   },
   "homepage": "https://github.com/maldorne/mud-web-client#readme",
   "dependencies": {
-    "vue": "^3.5.0",
-    "@xterm/xterm": "^5.5.0",
     "@xterm/addon-fit": "^0.10.0",
-    "@xterm/addon-web-links": "^0.11.0"
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/xterm": "^5.5.0",
+    "golden-layout": "^2.6.0",
+    "vue": "^3.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.0",
-    "typescript": "^5.8.0",
-    "vue-tsc": "^2.2.0",
-    "vite": "^6.2.0",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.0",
     "eslint-plugin-prettier": "^5.2.0",
-    "prettier": "^3.8.0",
-    "typescript-eslint": "^8.32.0",
     "eslint-plugin-vue": "^10.8.0",
-    "globals": "^16.0.0"
+    "globals": "^16.0.0",
+    "prettier": "^3.8.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.32.0",
+    "vite": "^6.2.0",
+    "vue-tsc": "^2.2.0"
   }
 }

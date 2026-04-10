@@ -39,7 +39,11 @@ function focusInput() {
   inputRef.value?.focus();
 }
 
-defineExpose({ write, writeln, focusInput });
+function refit() {
+  fitAddon?.fit();
+}
+
+defineExpose({ write, writeln, focusInput, refit });
 
 /* ── Input handling ───────────────────────────── */
 function onKeydown(event: KeyboardEvent) {

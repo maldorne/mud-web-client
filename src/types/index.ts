@@ -45,6 +45,9 @@ export type ProxyMessage =
   | GmcpMessage
   | ChatMessage;
 
+/** Layout mode */
+export type LayoutMode = 'embed' | 'full';
+
 /** Client configuration derived from query parameters and defaults */
 export interface ClientConfig {
   proxy: string;
@@ -55,6 +58,7 @@ export interface ClientConfig {
   ttype: string;
   debug: boolean;
   separator: string;
+  mode: LayoutMode;
 }
 
 /** Parsed GMCP event */

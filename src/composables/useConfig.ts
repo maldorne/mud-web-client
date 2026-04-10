@@ -1,9 +1,18 @@
 import { reactive, readonly } from 'vue';
-import type { ClientConfig } from '@/types';
+import type { ClientConfig, LayoutMode } from '@/types';
 
 function param(name: string): string | null {
   const url = new URL(window.location.href);
   return url.searchParams.get(name);
+}
+
+function resolveMode(): LayoutMode {
+  const p = param('mode');
+  if (p === 'full' || p === 'embed') return p;
+  // Legacy: ?embed=1 forces embed mode
+  if (param('embed') === '1') return 'embed';
+  // Default: embed (for iframe compatibility)
+  return 'embed';
 }
 
 function createConfig(): ClientConfig {
@@ -16,6 +25,7 @@ function createConfig(): ClientConfig {
     ttype: param('ttype') || 'maldorne.org',
     debug: param('debug') === '1',
     separator: param('separator') ?? ';',
+    mode: resolveMode(),
   });
 }
 
