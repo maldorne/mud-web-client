@@ -3,26 +3,23 @@ import {
   LayoutConfig,
   ResolvedLayoutConfig,
   ComponentContainer,
-  JsonValue,
 } from 'golden-layout';
 import { createApp, Component, App, reactive } from 'vue';
 
 interface MountedComponent {
   app: App;
   container: ComponentContainer;
+  wrapper: HTMLElement;
 }
 
 /**
  * Adapter to bind Vue 3 components into Golden Layout 2.x panels.
  *
- * Usage:
- *   const adapter = new GoldenLayoutAdapter(rootEl, sharedState);
- *   adapter.registerComponent('Terminal', TerminalPanel);
- *   adapter.loadLayout(config);
+ * Uses registerComponentFactoryFunction which creates a plain HTML element
+ * per component — simpler and more stable than the virtual component API.
  */
 export class GoldenLayoutAdapter {
   readonly layout: GoldenLayout;
-  private components = new Map<string, Component>();
   private mounted: MountedComponent[] = [];
   private sharedState: Record<string, unknown>;
 
@@ -32,21 +29,37 @@ export class GoldenLayoutAdapter {
   ) {
     this.sharedState = reactive(sharedState);
     this.layout = new GoldenLayout(rootElement);
-
-    this.layout.getComponentEvent = (
-      container: ComponentContainer,
-      state: JsonValue | undefined,
-    ) => {
-      this.onBind(container, state);
-    };
-
-    this.layout.releaseComponentEvent = (container: ComponentContainer) => {
-      this.onUnbind(container);
-    };
   }
 
   registerComponent(name: string, component: Component) {
-    this.components.set(name, component);
+    const sharedState = this.sharedState;
+    const mounted = this.mounted;
+    this.layout.registerComponentFactoryFunction(
+      name,
+      (
+        container: ComponentContainer,
+      ): ComponentContainer.Component | undefined => {
+        const wrapper = document.createElement('div');
+        wrapper.style.height = '100%';
+        wrapper.style.width = '100%';
+        wrapper.style.overflow = 'hidden';
+        container.element.appendChild(wrapper);
+
+        const app = createApp(component, {
+          glContainer: container,
+          sharedState,
+        });
+        app.mount(wrapper);
+        mounted.push({ app, container, wrapper });
+
+        container.stateRequestEvent = () => undefined;
+
+        return {
+          component,
+          virtual: false,
+        } as unknown as ComponentContainer.Component;
+      },
+    );
   }
 
   loadLayout(config: LayoutConfig) {
@@ -63,31 +76,5 @@ export class GoldenLayoutAdapter {
     }
     this.mounted = [];
     this.layout.destroy();
-  }
-
-  private onBind(container: ComponentContainer, state: JsonValue | undefined) {
-    const typeName = container.componentType as string;
-    const Comp = this.components.get(typeName);
-    if (!Comp) {
-      container.element.textContent = `Unknown panel: ${typeName}`;
-      return;
-    }
-
-    const app = createApp(Comp, {
-      glContainer: container,
-      glState: state,
-      sharedState: this.sharedState,
-    });
-
-    app.mount(container.element);
-    this.mounted.push({ app, container });
-  }
-
-  private onUnbind(container: ComponentContainer) {
-    const idx = this.mounted.findIndex((m) => m.container === container);
-    if (idx !== -1) {
-      this.mounted[idx].app.unmount();
-      this.mounted.splice(idx, 1);
-    }
   }
 }

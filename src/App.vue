@@ -5,11 +5,7 @@ import { useConfig } from '@/composables/useConfig';
 import { useSocket } from '@/composables/useSocket';
 import { useTelnetParser } from '@/composables/useTelnetParser';
 import { GoldenLayoutAdapter } from '@/layouts/GoldenLayoutAdapter';
-import {
-  fullLayout,
-  saveLayoutToStorage,
-  loadLayoutFromStorage,
-} from '@/layouts/defaultLayouts';
+import { fullLayout, saveLayoutToStorage } from '@/layouts/defaultLayouts';
 import TerminalPanel from '@/panels/TerminalPanel.vue';
 import InfoPanel from '@/panels/InfoPanel.vue';
 
@@ -109,8 +105,9 @@ onMounted(async () => {
     adapter.registerComponent('Terminal', TerminalPanel);
     adapter.registerComponent('Info', InfoPanel);
 
-    const saved = loadLayoutFromStorage();
-    adapter.loadLayout(saved || fullLayout);
+    // TODO: restore saved layout once golden-layout is stable
+    // const saved = loadLayoutFromStorage();
+    adapter.loadLayout(fullLayout);
 
     adapter.layout.on('stateChanged', () => {
       if (adapter) saveLayoutToStorage(adapter.saveLayout());
