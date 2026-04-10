@@ -10,7 +10,7 @@ export interface UseSocketReturn {
   sendBin: (bytes: number[]) => void;
   sendGmcp: (payload: string) => void;
   sendMsdp: (key: string, val: string | string[]) => void;
-  onData: (fn: (data: string) => void) => void;
+  onData: (fn: (data: Uint8Array) => void) => void;
   onClose: (fn: () => void) => void;
 }
 
@@ -19,7 +19,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
   const error = ref<string | null>(null);
 
   let ws: WebSocket | null = null;
-  const dataHandlers: ((data: string) => void)[] = [];
+  const dataHandlers: ((data: Uint8Array) => void)[] = [];
   const closeHandlers: (() => void)[] = [];
 
   function connect() {
@@ -53,13 +53,15 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     };
 
     ws.onmessage = (event: MessageEvent) => {
-      let text: string;
+      let bytes: Uint8Array;
       if (event.data instanceof ArrayBuffer) {
-        text = new TextDecoder('utf-8').decode(event.data);
+        bytes = new Uint8Array(event.data);
       } else {
-        text = String(event.data);
+        // String data (shouldn't happen with binaryType='arraybuffer')
+        const encoder = new TextEncoder();
+        bytes = encoder.encode(String(event.data));
       }
-      for (const fn of dataHandlers) fn(text);
+      for (const fn of dataHandlers) fn(bytes);
     };
 
     ws.onclose = () => {
@@ -106,7 +108,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     }
   }
 
-  function onData(fn: (data: string) => void) {
+  function onData(fn: (data: Uint8Array) => void) {
     dataHandlers.push(fn);
   }
 
