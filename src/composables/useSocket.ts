@@ -27,6 +27,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     error.value = null;
 
     ws = new WebSocket(config.proxy);
+    ws.binaryType = 'arraybuffer';
 
     ws.onopen = () => {
       connected.value = true;
@@ -52,9 +53,13 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     };
 
     ws.onmessage = (event: MessageEvent) => {
-      const data =
-        typeof event.data === 'string' ? event.data : String(event.data);
-      for (const fn of dataHandlers) fn(data);
+      let text: string;
+      if (event.data instanceof ArrayBuffer) {
+        text = new TextDecoder('utf-8').decode(event.data);
+      } else {
+        text = String(event.data);
+      }
+      for (const fn of dataHandlers) fn(text);
     };
 
     ws.onclose = () => {
