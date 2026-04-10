@@ -2,97 +2,141 @@
 
 ### What is this?
 
-Webapp to connect to a [MUD](https://en.wikipedia.org/wiki/MUD) / MUSH / MOO game server, supporting all major data interchange and interactive text protocols. The connection is done through a secure websocket (`wss://` protocol), so you will need a proxy in the server that _translates_ the `wss` sessions to `telnet`. You can use the [`mud-web-proxy`](https://github.com/maldorne/mud-web-proxy) project to achieve that.
+A web-based [MUD](https://en.wikipedia.org/wiki/MUD) / MUSH / MOO game client built with [Vue 3](https://vuejs.org/) and [xterm.js](https://xtermjs.org/). It connects to MUD game servers through a WebSocket-to-Telnet proxy ([`mud-web-proxy`](https://github.com/maldorne/mud-web-proxy)), rendering terminal output with full ANSI color support.
 
 You can see this project working in the [maldorne.org](https://maldorne.org/play/) web page.
 
 ### History
 
-This project is a fork of [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App), made by [@plamzi](https://github.com/plamzi), creator of [mudportal.com](http://www.mudportal.com/). The original project had the code of both the client and proxy-server apps, and was outdated and did not support secure connections (`wss://` instead of `ws://`), so I decided to fork it in 2020, separate in different projects and update them. But kudos to [@plamzi](https://github.com/plamzi), who is the original author.
+This project was originally a fork of [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App), made by [@plamzi](https://github.com/plamzi), creator of [mudportal.com](http://www.mudportal.com/). The original project contained both the web client and proxy server in a single repository. In 2020, [@neverbot](https://github.com/neverbot) forked and split them into separate projects, adding support for secure connections (`wss://` instead of `ws://`). Kudos to [@plamzi](https://github.com/plamzi), whose original work made this project possible.
 
-In 2025, I've ported the project to use ES modules, and the build system is now based on [Vite](https://vitejs.dev/). The project is now using the latest version of the libraries, and the code is cleaner and easier to maintain. 
+In 2025, the project was ported to ES modules with a Vite build system, and all dependencies were updated to their latest versions, modernizing the codebase while keeping the original jQuery-based architecture.
+
+In 2026, the project was rewritten from scratch using Vue 3, TypeScript, and xterm.js. This is no longer a fork — it is a completely new implementation designed for modern browsers, with a clean component architecture, proper telnet protocol parsing, and Docker support for deployment in a cluster behind a reverse proxy like Traefik.
 
 ### Motivation
 
-In modern browsers, web-pages served through `https://` are not allowed to open connections to non-secure locations, so an `https://`-served web could not include a web client which opens a connection using `ws://`. Modifications were needed to allow secure connections.
+In modern browsers, web pages served through `https://` are not allowed to open connections to non-secure endpoints. An `https://`-served page cannot use plain `ws://` WebSockets. This client connects via `wss://` to the proxy, which bridges the gap to raw TCP/Telnet MUD servers.
 
 ## Features
 
-  * Window-based web UI with draggable and resizable windows, window toolbar.
-  * MCCP compression support (zlib)
-  * MXP protocol support built into the client
+  * Terminal rendering with [xterm.js](https://xtermjs.org/) (the same terminal used by VS Code)
+  * Full ANSI color support (16 colors, 256 colors, true color)
+  * Scrollback buffer (10,000 lines)
+  * Command input with history (up/down arrows)
+  * Command separator support (`;` splits into multiple commands)
+  * Password mode (hidden input when server sends IAC WILL ECHO)
+  * Clickable URLs in terminal output
+  * GMCP protocol support (bidirectional)
   * MSDP protocol support
-  * GMCP / ATCP protocol support (JSON) with sample uses in multiple existing plugins
-  * 256-color support, including background colors
-  * Unicode font support and UTF-8 negotiation
-  * Vector-based world mapper with flexible edit mode to allow for mapping any MUD world via exploration
-  * Triggers / macros / command memory with typeahead
+  * MXP protocol support
+  * Bell character support (audible notification)
+  * Telnet IAC sequence parsing and handling
+  * Named route support for Docker cluster deployments
+  * Legacy host:port routing for standalone MUD servers
+  * Responsive layout (works in 800x600 iframe and fullscreen)
+  * Multi-stage Docker build (node:20-alpine + nginx:alpine)
+  * Query parameter configuration (no config files needed)
+
+## Installation
+
+### Standalone
+
+```bash
+git clone https://github.com/maldorne/mud-web-client
+cd mud-web-client
+npm install
+npm run dev
+```
+
+The client will be available at `http://localhost:5173/`.
+
+### Docker (local development)
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The client will be available at `http://localhost:8080/`.
+
+### Docker (cluster with Traefik)
+
+Add the client service to your `docker-compose.yml`:
+
+```yaml
+mud-web-client:
+  container_name: mud-web-client
+  image: ghcr.io/maldorne/mud-web-client:latest
+  restart: unless-stopped
+  networks:
+    - maldorne-network
+  labels:
+    - traefik.enable=true
+    - traefik.http.routers.mud-client.rule=Host(`play.maldorne.org`)
+    - traefik.http.routers.mud-client.entrypoints=websecure
+    - traefik.http.routers.mud-client.tls.certresolver=myresolver
+    - traefik.http.services.mud-client.loadbalancer.server.port=80
+```
 
 ## Configuration
 
-``` bash
-git clone https://github.com/maldorne/mud-web-client
-npm install
+All configuration is done through URL query parameters. No config files or environment variables are needed.
+
+| Parameter   | Default                          | Description                              |
+| ----------- | -------------------------------- | ---------------------------------------- |
+| `proxy`     | `wss://play.maldorne.org:6200/`  | WebSocket proxy URL                      |
+| `host`      | `muds.maldorne.org`              | MUD server host (legacy routing)         |
+| `port`      | `5010`                           | MUD server port (legacy routing)         |
+| `mud`       | —                                | Named route for cluster MUDs             |
+| `name`      | `Guest`                          | Player display name                      |
+| `ttype`     | `maldorne.org`                   | Terminal type sent to MUD                |
+| `debug`     | `0`                              | Enable debug mode (`1` to enable)        |
+| `separator` | `;`                              | Command separator character              |
+
+### Examples
+
+Connect to a named MUD in the cluster:
+```
+https://play.maldorne.org/?mud=iluminado
 ```
 
-### MUD Configuration Files
-
-The client now supports JSON configuration files for different MUDs. Create a file in the `muds/` directory for each MUD you want to configure:
-
-```json
-{
-  "name": "Example MUD",
-  "host": "muds.example.org",
-  "port": "5010",
-  "proxy": "wss://play.example.org:6200/",
-
-  "other configuration options, see muds/example.json or muds/ciudad-capital.json for more examples"
-}
+Connect to a specific host and port:
+```
+https://play.maldorne.org/?port=5030
 ```
 
-Key configuration options:
-  - `name`: Display name of the MUD.
-  - `host`: MUD server hostname.
-  - `port`: MUD server port, The mud, **not** the proxy.
-  - `proxy`: WebSocket proxy URL. The `wss` url where [the proxy](https://github.com/maldorne/mud-web-proxy) is running.
+Embedded in a blog iframe:
+```html
+<iframe src="https://play.maldorne.org/?port=5030" width="800" height="600"></iframe>
+```
 
-To use a specific MUD configuration, add the `mud` parameter to the URL:
+## Development
 
-`http://localhost:5173/?mud=example-mud`
+```bash
+npm run dev        # Vite dev server at localhost:5173
+npm run build      # TypeScript check + production build to /dist
+npm run preview    # Preview production build
+npm run lint       # ESLint check
+npm run lint:fix   # ESLint auto-fix
+```
 
-URL parameters will override values from the JSON config file. For example:
+## Architecture
 
-`http://localhost:5173/?mud=example-mud&debug=1&chatterbox=1`
+The client is built with Vue 3 Composition API and TypeScript:
 
-After changing configuration values, you can rebuild the project with `npm run build` and copy the files in the `/dist` directory to your web server, as it is explained below.
+- `src/main.ts` — App entry point
+- `src/App.vue` — Root component, wires socket + parser + terminal
+- `src/components/MudTerminal.vue` — xterm.js terminal wrapper with command input
+- `src/composables/useSocket.ts` — WebSocket connection management, proxy protocol
+- `src/composables/useTelnetParser.ts` — IAC sequence extraction, GMCP/MSDP/MXP parsing
+- `src/composables/useConfig.ts` — Query parameter parsing, defaults
+- `src/types/index.ts` — TypeScript interfaces and telnet constants
 
-### Default Configuration
-
-The values in `src/config.js` are now used as fallbacks when:
-  - No MUD is specified in the URL
-  - A specified MUD configuration file is not found
-  - Specific fields are missing in the MUD configuration
-
-## Usage
-
-### In your local environment
-
-  * Run `npm run dev` to start a local web server. The web client will be available at `http://localhost:5173/`.
-
-### For deployment on a web server
-
-  * If you make changes (even only in a JSON configuration file), you can run `npm run build` to generate the new files in the `/dist` directory.
-  * Copy all files inside the `/dist` directory to a web-accessible directory on your web server. Files _must_ be served by a web server, it won't work if you just open the `index.html` file in your browser. Most code editors have plugins to run a local web server to test these kind of things.
-  * Point a browser at the root of that directory to load the included `index.html` file.
+The legacy jQuery client is preserved in `legacy/` for reference.
 
 ## Changelog
 
-  * v1 ([@plamzi](https://github.com/plamzi)): Original version [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App).
-  * v2 ([@neverbot](https://github.com/neverbot)): Added support for `wss://` connections. Separated the client and [proxy-server code](https://github.com/maldorne/mud-web-proxy).
-  * v3 ([@neverbot](https://github.com/neverbot)): Ported to ES modules and Vite. Updated all dependencies. 
-
-## Note about integration modules
-
-The legacy integration modules (havoc, juju mapper, etc.) from the `src-old` directory have been migrated to use ES modules syntax and can now be found in the main `src` directory. While the core functionality should remain intact, these modules have not been thoroughly tested with the new architecture. These features were primarily used in the play area of [mudportal.com](https://www.mudportal.com/play). If you need to use those features, maybe you will have to fix them yourself. If you're interested in using or improving those integration modules, you're welcome to test them, report issues, or submit pull requests. Set them up in you own JSON configuration file, and see if they work.
-
-All basic functionalities of the client have been thoroughly tested and should be working properly. Only the integration modules might need additional work.
+  * v1 ([@plamzi](https://github.com/plamzi)): Original version, part of [MUDPortal-Web-App](https://github.com/plamzi/MUDPortal-Web-App).
+  * v2 ([@neverbot](https://github.com/neverbot)): Forked, separated client and proxy. Added `wss://` support.
+  * v3 ([@neverbot](https://github.com/neverbot)): Ported to ES modules and Vite. Updated all dependencies.
+  * v4 ([@neverbot](https://github.com/neverbot)): Full rewrite with Vue 3, TypeScript, and xterm.js. Docker support, telnet protocol parser, responsive layout.
