@@ -1,0 +1,20 @@
+name: Build and Publish to Github Container Registry
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Login onto ghcr
+        run: |
+          echo "${{ secrets.MALDORNE_BOT_GHCR_TOKEN }}" | docker login ghcr.io --username maldorne-bot --password-stdin
+      - name: Build image
+        run: |
+          docker build --no-cache . -t ghcr.io/maldorne/mud-web-client:latest
+      - name: Publish image
+        run: |
+          docker push ghcr.io/maldorne/mud-web-client:latest

@@ -1,0 +1,5 @@
+services:
+  mud-web-client:
+    build: .
+    ports:
+      - '8080:80'
