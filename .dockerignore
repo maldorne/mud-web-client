@@ -1,0 +1,10 @@
+node_modules
+dist
+legacy
+.git
+.github
+.gitignore
+.prettierrc
+*.md
+docker-compose*.yml
+eslint.config.js
