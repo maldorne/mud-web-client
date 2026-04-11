@@ -201,7 +201,6 @@ body {
 
 .lm_header {
   background: #fff !important;
-  height: 40px !important;
   border-bottom: 1px solid #e8e8e8 !important;
 }
 
@@ -214,8 +213,6 @@ body {
   font-size: 15px !important;
   font-weight: 400 !important;
   padding: 0 12px !important;
-  line-height: 38px !important;
-  height: 40px !important;
   margin: 0 !important;
   transition: color 0.2s ease !important;
 }

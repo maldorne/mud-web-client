@@ -12,6 +12,9 @@ export const embedLayout: LayoutConfig = {
 
 /** Full mode: terminal + side panels */
 export const fullLayout: LayoutConfig = {
+  dimensions: {
+    headerHeight: 36,
+  },
   root: {
     type: 'row',
     content: [
