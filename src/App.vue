@@ -214,6 +214,10 @@ body {
   font-weight: 400 !important;
   padding: 0 12px !important;
   margin: 0 !important;
+  height: 100% !important;
+  line-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
   transition: color 0.2s ease !important;
 }
 
