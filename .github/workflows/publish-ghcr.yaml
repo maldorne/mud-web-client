@@ -9,6 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
       - name: Login onto ghcr
         run: |
           echo "${{ secrets.MALDORNE_BOT_GHCR_TOKEN }}" | docker login ghcr.io --username maldorne-bot --password-stdin
