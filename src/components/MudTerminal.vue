@@ -148,21 +148,23 @@ watch(
 
 <template>
   <div class="mud-terminal">
-    <div ref="terminalRef" class="terminal-container"></div>
-    <div class="input-bar">
-      <span class="input-prompt">&gt;</span>
-      <input
-        ref="inputRef"
-        v-model="inputValue"
-        :type="passwordMode ? 'password' : 'text'"
-        class="command-input"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-        placeholder="Enter command..."
-        @keydown="onKeydown"
-      />
+    <div class="terminal-wrapper">
+      <div ref="terminalRef" class="terminal-container"></div>
+      <div class="input-bar">
+        <span class="input-prompt">&gt;</span>
+        <input
+          ref="inputRef"
+          v-model="inputValue"
+          :type="passwordMode ? 'password' : 'text'"
+          class="command-input"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="Enter command..."
+          @keydown="onKeydown"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -174,11 +176,17 @@ watch(
   height: 100%;
   width: 100%;
   background: #fff;
-  padding: 6px;
+  padding: 8px;
 }
 
-.mud-terminal .terminal-container {
+.terminal-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
   border-radius: 4px;
+  overflow: hidden;
 }
 
 .terminal-container {
@@ -187,12 +195,16 @@ watch(
   overflow: hidden;
 }
 
+/* xterm.js padding via CSS — gives inner margin to terminal text */
+.terminal-container :deep(.xterm) {
+  padding: 8px;
+}
+
 .input-bar {
   display: flex;
   align-items: center;
-  background: #1a1a1a;
-  border-top: 1px solid #333;
-  padding: 4px 8px;
+  background: #111;
+  padding: 6px 12px;
   flex-shrink: 0;
 }
 

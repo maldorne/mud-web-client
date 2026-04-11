@@ -244,14 +244,20 @@ body {
   border: none !important;
 }
 
-/* Invert white icons to dark for light theme */
+/* Invert white icons to match #767676 text color */
+.lm_controls {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
 .lm_controls > * {
-  filter: invert(1) !important;
-  opacity: 0.3 !important;
+  filter: invert(0.55) !important;
+  opacity: 1 !important;
 }
 
 .lm_controls > *:hover {
-  opacity: 0.7 !important;
+  filter: invert(0.75) !important;
 }
 
 .lm_dragProxy .lm_content {
