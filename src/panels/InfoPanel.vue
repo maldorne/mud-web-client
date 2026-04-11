@@ -37,41 +37,42 @@ watch(
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--panel-bg, #1a1a2e);
-  color: var(--panel-fg, #ccc);
-  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 13px;
+  background: var(--panel-bg, #fff);
+  color: var(--panel-fg, #363636);
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
 }
 
 .info-header {
-  padding: 6px 10px;
-  font-weight: 600;
-  font-size: 11px;
+  padding: 10px 16px;
+  font-weight: 400;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--accent, #2d96bd);
-  border-bottom: 1px solid var(--border, #2a2a3e);
+  border-bottom: 1px solid var(--border, #e8e8e8);
   flex-shrink: 0;
 }
 
 .info-body {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 10px;
+  padding: 8px 16px;
 }
 
 .info-empty {
-  color: #555;
+  color: #767676;
   font-style: italic;
   padding: 20px 0;
   text-align: center;
 }
 
 .info-entry {
-  padding: 3px 0;
-  border-bottom: 1px solid var(--border, #2a2a3e);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border, #e8e8e8);
   word-break: break-all;
   font-family: 'Cascadia Code', 'Fira Code', monospace;
   font-size: 12px;
+  color: #363636;
 }
 </style>

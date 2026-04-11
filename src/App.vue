@@ -167,7 +167,7 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #0d0d1a;
+  background: #fff;
 }
 
 #app {
@@ -175,42 +175,63 @@ body {
   width: 100%;
 }
 
-/* ── Golden Layout theme overrides (maldorne dark) ── */
+/*
+ * Golden Layout theme — maldorne.org light
+ *
+ * Matches the Hexo blog at maldorne.org:
+ *   font:        Source Sans Pro, 400, ~17px
+ *   text:        #363636
+ *   secondary:   #767676
+ *   background:  #fff
+ *   border:      #e8e8e8
+ *   accent:      #2d96bd
+ *   accent-hover: #ef3982 (pink, used for post link hover)
+ */
 :root {
-  --panel-bg: #1a1a2e;
-  --panel-fg: #cccccc;
+  --panel-bg: #fff;
+  --panel-fg: #363636;
   --accent: #2d96bd;
-  --border: #2a2a3e;
+  --accent-hover: #ef3982;
+  --border: #e8e8e8;
 }
 
 .lm_goldenlayout {
-  background: #0d0d1a !important;
+  background: #f5f5f5 !important;
 }
 
 .lm_header {
-  background: #16162a !important;
+  background: #fff !important;
+  height: 40px !important;
+  border-bottom: 1px solid #e8e8e8 !important;
 }
 
 .lm_header .lm_tab {
-  background: #1a1a2e !important;
-  color: #888 !important;
-  border: 1px solid #2a2a3e !important;
-  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif !important;
-  font-size: 12px !important;
+  background: #fff !important;
+  color: #767676 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  padding: 0 12px !important;
+  line-height: 38px !important;
+  height: 40px !important;
+  margin: 0 !important;
+  transition: color 0.2s ease !important;
 }
 
 .lm_header .lm_tab.lm_active {
-  background: #0d0d1a !important;
-  color: #2d96bd !important;
-  border-bottom-color: #0d0d1a !important;
+  background: #fff !important;
+  color: #363636 !important;
+  border-bottom: 2px solid #2d96bd !important;
 }
 
 .lm_header .lm_tab:hover {
-  color: #ccc !important;
+  color: #2d96bd !important;
 }
 
 .lm_splitter {
-  background: #2a2a3e !important;
+  background: #e8e8e8 !important;
 }
 
 .lm_splitter:hover {
@@ -218,7 +239,7 @@ body {
 }
 
 .lm_content {
-  background: #0d0d1a !important;
+  background: #fff !important;
   border: none !important;
 }
 
@@ -226,13 +247,20 @@ body {
   background-color: transparent !important;
 }
 
+.lm_controls .lm_close:hover {
+  opacity: 0.6 !important;
+}
+
 .lm_dragProxy .lm_content {
-  background: #1a1a2e !important;
+  background: #fff !important;
+  box-shadow:
+    rgba(0, 0, 0, 0.1) 0px 4px 16px 0px,
+    rgba(0, 0, 0, 0.08) 0px 1px 3px 0px !important;
 }
 
 .lm_dropTargetIndicator {
   outline: 2px solid #2d96bd !important;
-  background: rgba(45, 150, 189, 0.15) !important;
+  background: rgba(45, 150, 189, 0.1) !important;
 }
 </style>
 
@@ -250,7 +278,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #0d0d1a;
+  background: #f5f5f5;
 }
 
 .layout-root {
@@ -259,12 +287,13 @@ body {
 }
 
 .error-bar {
-  background: #5c1a1a;
-  color: #ff6b6b;
-  padding: 6px 12px;
-  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
-  font-size: 12px;
+  background: #fef2f2;
+  color: #c7254e;
+  padding: 8px 16px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
   text-align: center;
   flex-shrink: 0;
+  border-top: 1px solid #e8e8e8;
 }
 </style>
