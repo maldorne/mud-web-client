@@ -244,12 +244,14 @@ body {
   border: none !important;
 }
 
-.lm_controls .lm_close {
-  background-color: transparent !important;
+/* Invert white icons to dark for light theme */
+.lm_controls > * {
+  filter: invert(1) !important;
+  opacity: 0.3 !important;
 }
 
-.lm_controls .lm_close:hover {
-  opacity: 0.6 !important;
+.lm_controls > *:hover {
+  opacity: 0.7 !important;
 }
 
 .lm_dragProxy .lm_content {

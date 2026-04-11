@@ -173,7 +173,12 @@ watch(
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: #000;
+  background: #fff;
+  padding: 6px;
+}
+
+.mud-terminal .terminal-container {
+  border-radius: 4px;
 }
 
 .terminal-container {
