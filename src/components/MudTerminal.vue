@@ -185,7 +185,7 @@ watch(
   display: flex;
   flex-direction: column;
   background: #000;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
 }
 
