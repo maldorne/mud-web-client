@@ -7,6 +7,7 @@ import '@xterm/xterm/css/xterm.css';
 
 const props = defineProps<{
   passwordMode: boolean;
+  padded?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -147,7 +148,7 @@ watch(
 </script>
 
 <template>
-  <div class="mud-terminal">
+  <div :class="['mud-terminal', { 'mud-terminal--padded': padded }]">
     <div class="terminal-wrapper">
       <div ref="terminalRef" class="terminal-container"></div>
       <div class="input-bar">
@@ -175,6 +176,10 @@ watch(
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: #000;
+}
+
+.mud-terminal--padded {
   background: #fff;
   padding: 8px;
 }

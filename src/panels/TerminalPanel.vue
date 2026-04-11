@@ -47,6 +47,7 @@ watch(
   <MudTerminal
     ref="terminalRef"
     :password-mode="passwordMode"
+    :padded="true"
     @command="onCommand"
   />
 </template>
