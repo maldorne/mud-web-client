@@ -20,8 +20,11 @@ jobs:
       - name: Build
         run: npm run build
       - name: Login onto ghcr
-        run: |
-          echo "${{ secrets.MALDORNE_BOT_GHCR_TOKEN }}" | docker login ghcr.io --username maldorne-bot --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: maldorne-bot
+          password: ${{ secrets.MALDORNE_BOT_GHCR_TOKEN }}
       - name: Build image
         run: |
           docker build --no-cache . -t ghcr.io/maldorne/mud-web-client:latest
