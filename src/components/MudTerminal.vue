@@ -21,6 +21,7 @@ const inputRef = ref<HTMLInputElement | null>(null);
 let terminal: Terminal | null = null;
 let fitAddon: FitAddon | null = null;
 let resizeObserver: ResizeObserver | null = null;
+let onClipboard: ((event: ClipboardEvent) => void) | null = null;
 
 /* ── Command history ──────────────────────────── */
 const commandHistory: string[] = [];
@@ -115,19 +116,27 @@ onMounted(async () => {
   terminal.open(terminalRef.value);
   fitAddon.fit();
 
-  // When the input is focused and the user copies (Cmd/Ctrl+C, menu, etc.),
-  // the copy event fires on the input. If xterm has a selection, hand the
-  // terminal selection to the clipboard instead of the (empty) input.
+  // Whenever the user copies (Cmd/Ctrl+C, menu, etc.), if xterm has a
+  // selection, hand the terminal selection to the clipboard. We listen on
+  // document instead of the input or the terminal element because xterm
+  // renders to canvas and its selection is not part of the DOM, so the
+  // browser's default copy would otherwise see nothing and produce an
+  // empty clipboard regardless of which element has focus.
   // Cut behaves the same — terminal output is read-only, so we only copy.
-  const onClipboard = (event: ClipboardEvent) => {
+  onClipboard = (event: ClipboardEvent) => {
     if (!terminal?.hasSelection()) return;
     const selection = terminal.getSelection();
     if (!selection) return;
+    // If another element on the page already has its own real DOM selection
+    // (e.g. user selected text in the input or a label), let that take
+    // precedence — the xterm selection might be a stale leftover.
+    const docSel = window.getSelection?.()?.toString();
+    if (docSel && docSel.length > 0) return;
     event.preventDefault();
     event.clipboardData?.setData('text/plain', selection);
   };
-  inputRef.value?.addEventListener('copy', onClipboard);
-  inputRef.value?.addEventListener('cut', onClipboard);
+  document.addEventListener('copy', onClipboard);
+  document.addEventListener('cut', onClipboard);
 
   // Click on terminal focuses the input
   terminal.element?.addEventListener('mouseup', () => {
@@ -148,6 +157,11 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  if (onClipboard) {
+    document.removeEventListener('copy', onClipboard);
+    document.removeEventListener('cut', onClipboard);
+    onClipboard = null;
+  }
   resizeObserver?.disconnect();
   terminal?.dispose();
 });
