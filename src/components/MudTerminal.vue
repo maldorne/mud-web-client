@@ -115,6 +115,20 @@ onMounted(async () => {
   terminal.open(terminalRef.value);
   fitAddon.fit();
 
+  // When the input is focused and the user copies (Cmd/Ctrl+C, menu, etc.),
+  // the copy event fires on the input. If xterm has a selection, hand the
+  // terminal selection to the clipboard instead of the (empty) input.
+  // Cut behaves the same — terminal output is read-only, so we only copy.
+  const onClipboard = (event: ClipboardEvent) => {
+    if (!terminal?.hasSelection()) return;
+    const selection = terminal.getSelection();
+    if (!selection) return;
+    event.preventDefault();
+    event.clipboardData?.setData('text/plain', selection);
+  };
+  inputRef.value?.addEventListener('copy', onClipboard);
+  inputRef.value?.addEventListener('cut', onClipboard);
+
   // Click on terminal focuses the input
   terminal.element?.addEventListener('mouseup', () => {
     // Only focus if no text is selected
