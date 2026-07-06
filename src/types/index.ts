@@ -39,11 +39,7 @@ export interface ChatMessage {
 }
 
 export type ProxyMessage =
-  | ConnectMessage
-  | BinMessage
-  | MsdpMessage
-  | GmcpMessage
-  | ChatMessage;
+  ConnectMessage | BinMessage | MsdpMessage | GmcpMessage | ChatMessage;
 
 /** Layout mode */
 export type LayoutMode = 'embed' | 'full';

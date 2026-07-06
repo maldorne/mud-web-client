@@ -28,8 +28,7 @@ onMounted(() => {
 /* Forward commands up via shared state callback */
 function onCommand(cmd: string) {
   const handler = props.sharedState.onCommand as
-    | ((cmd: string) => void)
-    | undefined;
+    ((cmd: string) => void) | undefined;
   if (handler) handler(cmd);
 }
 
