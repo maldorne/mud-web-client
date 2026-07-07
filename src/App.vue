@@ -68,6 +68,15 @@ function handleGmcp(event: ReturnType<typeof parseGmcpText>) {
 parser.onGmcp(handleGmcp);
 socket.onGmcp((raw) => handleGmcp(parseGmcpText(raw)));
 
+/* ── MSDP events ──────────────────────────────── */
+socket.onMsdp((pair) => {
+  if (config.debug) {
+    getTerminal()?.writeln(
+      `\x1b[35m[MSDP] ${pair.key}: ${JSON.stringify(pair.val)}\x1b[0m`,
+    );
+  }
+});
+
 /* ── Data from proxy → parse → terminal ───────── */
 socket.onData((raw) => {
   const clean = parser.parse(raw);

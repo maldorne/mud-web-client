@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import type { ConnectMessage, ClientConfig } from '@/types';
+import type { ConnectMessage, ClientConfig, MsdpMessage } from '@/types';
 
 export interface UseSocketReturn {
   connected: Ref<boolean>;
@@ -12,6 +12,7 @@ export interface UseSocketReturn {
   sendMsdp: (key: string, val: string | string[]) => void;
   onData: (fn: (data: Uint8Array) => void) => void;
   onGmcp: (fn: (raw: string) => void) => void;
+  onMsdp: (fn: (pair: MsdpMessage['msdp']) => void) => void;
   onClose: (fn: () => void) => void;
 }
 
@@ -22,6 +23,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
   let ws: WebSocket | null = null;
   const dataHandlers: ((data: Uint8Array) => void)[] = [];
   const gmcpHandlers: ((raw: string) => void)[] = [];
+  const msdpHandlers: ((pair: MsdpMessage['msdp']) => void)[] = [];
   const closeHandlers: (() => void)[] = [];
 
   /** Handle a JSON control message from the proxy (gmcp, chat, ...). */
@@ -34,6 +36,13 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     }
     if (typeof msg.gmcp === 'string') {
       for (const fn of gmcpHandlers) fn(msg.gmcp);
+    }
+    if (
+      typeof msg.msdp === 'object' &&
+      msg.msdp !== null &&
+      typeof (msg.msdp as MsdpMessage['msdp']).key === 'string'
+    ) {
+      for (const fn of msdpHandlers) fn(msg.msdp as MsdpMessage['msdp']);
     }
     // chat / chatlog messages: ignored until the chat panel exists
   }
@@ -143,6 +152,10 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     gmcpHandlers.push(fn);
   }
 
+  function onMsdp(fn: (pair: MsdpMessage['msdp']) => void) {
+    msdpHandlers.push(fn);
+  }
+
   function onClose(fn: () => void) {
     closeHandlers.push(fn);
   }
@@ -158,6 +171,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     sendMsdp,
     onData,
     onGmcp,
+    onMsdp,
     onClose,
   };
 }
