@@ -93,15 +93,9 @@ export function useTelnetParser() {
       bytes = input;
     }
 
-    // Check for incomplete IAC subnegotiation at the end:
-    // find last IAC SB that doesn't have a matching IAC SE after it
-    const lastSb = findLastIacSb(bytes);
-    if (lastSb !== -1 && !hasIacSeAfter(bytes, lastSb)) {
-      pending = bytes.slice(lastSb);
-      bytes = bytes.slice(0, lastSb);
-    }
-
-    // Process IAC sequences and build clean output
+    // Process IAC sequences and build clean output. An incomplete IAC
+    // sequence at the end of the buffer is stashed in `pending` and
+    // completed with the next message.
     const clean = stripIac(bytes);
 
     // Handle bell characters
@@ -129,11 +123,18 @@ export function useTelnetParser() {
   }
 
   /**
-   * Scan bytes, process IAC sequences, return non-IAC bytes.
+   * Scan bytes, process IAC sequences, return non-IAC bytes. A trailing
+   * incomplete IAC sequence (lone IAC, IAC + verb without its option, or
+   * IAC SB without its closing IAC SE) is stashed in `pending` so it can
+   * be completed by the next message instead of leaking into the text.
    */
   function stripIac(bytes: Uint8Array): Uint8Array {
     const out: number[] = [];
     let i = 0;
+
+    const stash = (from: number) => {
+      pending = bytes.slice(from);
+    };
 
     while (i < bytes.length) {
       if (bytes[i] !== TEL.IAC) {
@@ -142,11 +143,10 @@ export function useTelnetParser() {
         continue;
       }
 
-      // IAC at end of buffer — keep it (shouldn't happen after pending check)
+      // Lone IAC at end of buffer — wait for the rest
       if (i + 1 >= bytes.length) {
-        out.push(bytes[i]);
-        i++;
-        continue;
+        stash(i);
+        break;
       }
 
       const verb = bytes[i + 1];
@@ -155,7 +155,8 @@ export function useTelnetParser() {
       if (verb === TEL.SB) {
         const seIdx = findIacSe(bytes, i + 2);
         if (seIdx === -1) {
-          // Incomplete — skip rest (shouldn't happen after pending check)
+          // Closing IAC SE not received yet — wait for the rest
+          stash(i);
           break;
         }
         const option = bytes[i + 2];
@@ -172,13 +173,14 @@ export function useTelnetParser() {
         verb === TEL.DO ||
         verb === TEL.DONT
       ) {
-        if (i + 2 < bytes.length) {
-          const option = bytes[i + 2];
-          handleNegotiation(verb, option);
-          i += 3;
-        } else {
-          i += 2;
+        if (i + 2 >= bytes.length) {
+          // Option byte not received yet — wait for the rest
+          stash(i);
+          break;
         }
+        const option = bytes[i + 2];
+        handleNegotiation(verb, option);
+        i += 3;
         continue;
       }
 
@@ -232,21 +234,6 @@ export function useTelnetParser() {
     return -1;
   }
 
-  /** Find last IAC SB in the buffer */
-  function findLastIacSb(bytes: Uint8Array): number {
-    for (let i = bytes.length - 2; i >= 0; i--) {
-      if (bytes[i] === TEL.IAC && bytes[i + 1] === TEL.SB) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  /** Check if there's an IAC SE after the given position */
-  function hasIacSeAfter(bytes: Uint8Array, from: number): boolean {
-    return findIacSe(bytes, from + 2) !== -1;
-  }
-
   /** Concatenate two Uint8Arrays */
   function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
     const result = new Uint8Array(a.length + b.length);
@@ -256,10 +243,10 @@ export function useTelnetParser() {
   }
 
   function flush(): string {
-    if (!pending) return '';
-    const buf = pending;
+    // `pending` only ever holds an incomplete IAC sequence, never text —
+    // on connection close it is protocol garbage, so drop it.
     pending = null;
-    return parse(buf);
+    return '';
   }
 
   return {
