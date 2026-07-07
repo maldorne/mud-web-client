@@ -65,6 +65,58 @@ describe('useTelnetParser', () => {
     expect(parser.parse(bytes('a', [TEL.IAC, TEL.IAC], 'b'))).to.equal('a�b');
   });
 
+  it('parses MSDP subnegotiation VAR/VAL pairs', () => {
+    const parser = useTelnetParser();
+    const events: { key: string; value: string }[][] = [];
+    parser.onMsdp((pairs) => events.push(pairs));
+
+    parser.parse(
+      bytes(
+        [TEL.IAC, TEL.SB, TEL.MSDP, TEL.MSDP_VAR],
+        'HEALTH',
+        [TEL.MSDP_VAL],
+        '100',
+        [TEL.MSDP_VAR],
+        'MANA',
+        [TEL.MSDP_VAL],
+        '50',
+        [TEL.IAC, TEL.SE],
+      ),
+    );
+
+    expect(events).to.deep.equal([
+      [
+        { key: 'HEALTH', value: '100' },
+        { key: 'MANA', value: '50' },
+      ],
+    ]);
+  });
+
+  it('strips bell characters from output and fires onBell once per message', () => {
+    const parser = useTelnetParser();
+    let bells = 0;
+    parser.onBell(() => bells++);
+
+    expect(parser.parse(bytes('ding', [0x07], 'dong', [0x07]))).to.equal(
+      'dingdong',
+    );
+    expect(bells).to.equal(1);
+  });
+
+  it('normalizes bare LF to CRLF and leaves CRLF untouched', () => {
+    const parser = useTelnetParser();
+    expect(parser.parse(bytes('a\nb'))).to.equal('a\r\nb');
+    expect(parser.parse(bytes('c\r\nd'))).to.equal('c\r\nd');
+  });
+
+  it('decodes a UTF-8 character split across two messages', () => {
+    const parser = useTelnetParser();
+    // 'ó' is 0xc3 0xb3 — split it between messages
+    const first = parser.parse(bytes('Versi', [0xc3]));
+    const second = parser.parse(bytes([0xb3], 'n'));
+    expect(first + second).to.equal('Versión');
+  });
+
   it('sets password mode on IAC WILL ECHO and clears it on IAC WONT ECHO', () => {
     const parser = useTelnetParser();
     parser.parse(bytes([TEL.IAC, TEL.WILL, TEL.ECHO]));

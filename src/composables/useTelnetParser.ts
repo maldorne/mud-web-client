@@ -16,6 +16,10 @@ export function useTelnetParser() {
   const msdpHandlers: ((pairs: MsdpPair[]) => void)[] = [];
   const bellHandlers: (() => void)[] = [];
   const decoder = new TextDecoder('utf-8', { fatal: false });
+  /** Streaming decoder for terminal text: holds incomplete multi-byte
+   *  UTF-8 sequences at the end of a message until the rest arrives,
+   *  instead of emitting replacement characters. */
+  const textDecoder = new TextDecoder('utf-8', { fatal: false });
 
   /** Buffer for incomplete IAC subnegotiations split across messages */
   let pending: Uint8Array | null = null;
@@ -112,8 +116,9 @@ export function useTelnetParser() {
       for (const fn of bellHandlers) fn();
     }
 
-    // Decode remaining bytes as UTF-8
-    let text = decoder.decode(new Uint8Array(filtered));
+    // Decode remaining bytes as UTF-8 (streaming: a multi-byte character
+    // split across messages is held until its continuation arrives)
+    let text = textDecoder.decode(new Uint8Array(filtered), { stream: true });
 
     // Normalize line endings for xterm.js
     text = text.replace(/\r\n/g, '\r\n');
