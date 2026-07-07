@@ -3,7 +3,10 @@ import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import MudTerminal from '@/components/MudTerminal.vue';
 import { useConfig } from '@/composables/useConfig';
 import { useSocket } from '@/composables/useSocket';
-import { useTelnetParser } from '@/composables/useTelnetParser';
+import {
+  useTelnetParser,
+  parseGmcpText,
+} from '@/composables/useTelnetParser';
 import { GoldenLayoutAdapter } from '@/layouts/GoldenLayoutAdapter';
 import { fullLayout, saveLayoutToStorage } from '@/layouts/defaultLayouts';
 import TerminalPanel from '@/panels/TerminalPanel.vue';
@@ -49,7 +52,9 @@ parser.onBell(() => {
 });
 
 /* ── GMCP events ──────────────────────────────── */
-parser.onGmcp((event) => {
+/* Two sources: JSON {gmcp} messages from the proxy (current) and
+ * IAC SB GMCP subnegotiations in the stream (older proxies). */
+function handleGmcp(event: ReturnType<typeof parseGmcpText>) {
   const log = sharedState.gmcpLog as string[];
   log.push(`${event.module}: ${JSON.stringify(event.data)}`);
   if (log.length > 200) log.splice(0, log.length - 200);
@@ -59,7 +64,9 @@ parser.onGmcp((event) => {
       `\x1b[36m[GMCP] ${event.module}: ${JSON.stringify(event.data)}\x1b[0m`,
     );
   }
-});
+}
+parser.onGmcp(handleGmcp);
+socket.onGmcp((raw) => handleGmcp(parseGmcpText(raw)));
 
 /* ── Data from proxy → parse → terminal ───────── */
 socket.onData((raw) => {

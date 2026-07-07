@@ -1,5 +1,8 @@
 import { expect } from 'chai';
-import { useTelnetParser } from '../src/composables/useTelnetParser';
+import {
+  useTelnetParser,
+  parseGmcpText,
+} from '../src/composables/useTelnetParser';
 import { TEL } from '../src/types';
 
 const GA = 249; // telnet Go Ahead, sent by LPmuds after prompts
@@ -115,6 +118,29 @@ describe('useTelnetParser', () => {
     const first = parser.parse(bytes('Versi', [0xc3]));
     const second = parser.parse(bytes([0xb3], 'n'));
     expect(first + second).to.equal('Versión');
+  });
+
+  describe('parseGmcpText', () => {
+    it('splits module and parses a JSON payload', () => {
+      expect(parseGmcpText('Char.Vitals {"hp":10}')).to.deep.equal({
+        module: 'Char.Vitals',
+        data: { hp: 10 },
+      });
+    });
+
+    it('handles a module with no payload', () => {
+      expect(parseGmcpText('Core.Ping')).to.deep.equal({
+        module: 'Core.Ping',
+        data: undefined,
+      });
+    });
+
+    it('keeps a non-JSON payload as a raw string', () => {
+      expect(parseGmcpText('Core.Hello not-json')).to.deep.equal({
+        module: 'Core.Hello',
+        data: 'not-json',
+      });
+    });
   });
 
   it('sets password mode on IAC WILL ECHO and clears it on IAC WONT ECHO', () => {

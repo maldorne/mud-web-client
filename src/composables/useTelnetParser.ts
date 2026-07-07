@@ -3,6 +3,25 @@ import { TEL } from '@/types';
 import type { GmcpEvent, MsdpPair } from '@/types';
 
 /**
+ * Parse a raw GMCP text payload ("Module.Name {json}") into a GmcpEvent.
+ * Used both for IAC SB GMCP subnegotiations and for {gmcp: "..."} JSON
+ * messages coming from the proxy.
+ */
+export function parseGmcpText(raw: string): GmcpEvent {
+  const spaceIdx = raw.indexOf(' ');
+  const module = spaceIdx === -1 ? raw : raw.substring(0, spaceIdx);
+  let parsed: unknown = undefined;
+  if (spaceIdx !== -1) {
+    try {
+      parsed = JSON.parse(raw.substring(spaceIdx + 1));
+    } catch {
+      parsed = raw.substring(spaceIdx + 1);
+    }
+  }
+  return { module, data: parsed };
+}
+
+/**
  * Parses incoming raw bytes from the proxy, extracting IAC sequences
  * (GMCP, MSDP, ECHO) at the byte level, then decodes the remaining
  * bytes as UTF-8 for the terminal.
@@ -35,18 +54,8 @@ export function useTelnetParser() {
   }
 
   function emitGmcp(data: Uint8Array) {
-    const raw = decoder.decode(data);
-    const spaceIdx = raw.indexOf(' ');
-    const module = spaceIdx === -1 ? raw : raw.substring(0, spaceIdx);
-    let parsed: unknown = undefined;
-    if (spaceIdx !== -1) {
-      try {
-        parsed = JSON.parse(raw.substring(spaceIdx + 1));
-      } catch {
-        parsed = raw.substring(spaceIdx + 1);
-      }
-    }
-    for (const fn of gmcpHandlers) fn({ module, data: parsed });
+    const event = parseGmcpText(decoder.decode(data));
+    for (const fn of gmcpHandlers) fn(event);
   }
 
   function emitMsdp(data: Uint8Array) {

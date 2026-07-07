@@ -11,6 +11,7 @@ export interface UseSocketReturn {
   sendGmcp: (payload: string) => void;
   sendMsdp: (key: string, val: string | string[]) => void;
   onData: (fn: (data: Uint8Array) => void) => void;
+  onGmcp: (fn: (raw: string) => void) => void;
   onClose: (fn: () => void) => void;
 }
 
@@ -20,7 +21,22 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
 
   let ws: WebSocket | null = null;
   const dataHandlers: ((data: Uint8Array) => void)[] = [];
+  const gmcpHandlers: ((raw: string) => void)[] = [];
   const closeHandlers: (() => void)[] = [];
+
+  /** Handle a JSON control message from the proxy (gmcp, chat, ...). */
+  function handleControlMessage(raw: string) {
+    let msg: Record<string, unknown>;
+    try {
+      msg = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return; // not valid JSON — drop
+    }
+    if (typeof msg.gmcp === 'string') {
+      for (const fn of gmcpHandlers) fn(msg.gmcp);
+    }
+    // chat / chatlog messages: ignored until the chat panel exists
+  }
 
   function connect() {
     if (ws) return;
@@ -60,20 +76,19 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
         raw = String(event.data);
       }
 
-      // Detect and skip JSON control messages from the proxy (chat, etc.)
-      // They start with '{' when decoded, while MUD data is raw bytes/text.
+      // The proxy sends JSON control messages (gmcp, chat, ...) as text
+      // frames starting with '{'; MUD data always arrives as binary frames.
       if (typeof raw === 'string') {
-        if (raw.startsWith('{')) return; // JSON control message, ignore for now
+        if (raw.startsWith('{')) {
+          handleControlMessage(raw);
+          return;
+        }
         const encoder = new TextEncoder();
         for (const fn of dataHandlers) fn(encoder.encode(raw));
         return;
       }
 
-      const bytes = new Uint8Array(raw);
-      // Check if this looks like a JSON control message (starts with 0x7B = '{')
-      if (bytes.length > 0 && bytes[0] === 0x7b) return;
-
-      for (const fn of dataHandlers) fn(bytes);
+      for (const fn of dataHandlers) fn(new Uint8Array(raw));
     };
 
     ws.onclose = () => {
@@ -124,6 +139,10 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     dataHandlers.push(fn);
   }
 
+  function onGmcp(fn: (raw: string) => void) {
+    gmcpHandlers.push(fn);
+  }
+
   function onClose(fn: () => void) {
     closeHandlers.push(fn);
   }
@@ -138,6 +157,7 @@ export function useSocket(config: ClientConfig): UseSocketReturn {
     sendGmcp,
     sendMsdp,
     onData,
+    onGmcp,
     onClose,
   };
 }
