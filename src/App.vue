@@ -3,10 +3,7 @@ import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import MudTerminal from '@/components/MudTerminal.vue';
 import { useConfig } from '@/composables/useConfig';
 import { useSocket } from '@/composables/useSocket';
-import {
-  useTelnetParser,
-  parseGmcpText,
-} from '@/composables/useTelnetParser';
+import { useTelnetParser, parseGmcpText } from '@/composables/useTelnetParser';
 import { GoldenLayoutAdapter } from '@/layouts/GoldenLayoutAdapter';
 import { fullLayout, saveLayoutToStorage } from '@/layouts/defaultLayouts';
 import TerminalPanel from '@/panels/TerminalPanel.vue';
